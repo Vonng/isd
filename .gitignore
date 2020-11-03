@@ -1,0 +1,17 @@
+# IDE files
+.idea
+.code
+isd.iml
+
+# macos files
+.DS_Store
+
+# parser binary (can be built from source)
+bin/isdd
+bin/isdh
+
+# data files (can be downloaded via Internet)
+data/daily/*.tar.gz
+data/hourly/*.tar.gz
+data/meta/isd_history.csv.gz
+data/meta/isd_station.csv.gz
