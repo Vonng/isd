@@ -116,7 +116,7 @@ EOF
 
 log_info "load isd history data to t_isd_history"
 cat ${DATA_DIR}/isd_history.csv.gz | gzip -d |
-  psql ${PGURL} -AXtwc "COPY t_isd_history FROM '/Volumes/Data/isd/data/meta/isd_history.csv' WITH (FORMAT CSV, HEADER,FORCE_NULL(usaf,wban,year,m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,m12));"
+  psql ${PGURL} -AXtwc "COPY t_isd_history FROM STDIN WITH (FORMAT CSV, HEADER,FORCE_NULL(usaf,wban,year,m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,m12));"
 
 log_info "build isd_history"
 psql ${PGURL} -AXtw <<-EOF

@@ -23,31 +23,9 @@ function log_info (){
     [ -t 2 ] && printf "\033[0;32m[$(date "+%Y-%m-%d %H:%M:%S")][INFO] $*\033[0m\n" 1>&2 || printf "[$(date "+%Y-%m-%d %H:%M:%S")][INFO] $*\n" 1>&2
 }
 
-year=${2-$(date '+%Y')}
-next_year=$((year+1))
-
-if (( year > 2030 )); then
-  log_info "year ${year} overflow"
-  exit 1
-fi
-
-if (( year < 1900 )); then
-  log_info "year ${year} underflow"
-    exit 1
-fi
-
 # get year record count
-sql="SELECT count(*) FROM isd_daily WHERE ts >= '${year}-01-01' AND ts < '${next_year}-01-01';"
-count=$(psql ${PGURL} -AXtwqc "${sql}")
-log_info "Year ${year} got ${count} records"
+log_info "truncate isd_daily_stable"
+psql ${PGURL} -AXtwqc 'TRUNCATE isd_daily_stable;'
 
-# delete year records
-log_info "DELETE FROM isd_daily WHERE ts >= '${year}-01-01' AND ts < '${next_year}-01-01';"
-sql="DELETE FROM isd_daily WHERE ts >= '${year}-01-01' AND ts < '${next_year}-01-01';"
-psql ${PGURL} -AXtwqc "${sql}"
-
-log_info "VACUUM isd_daily"
-psql ${PGURL} -AXtwqc 'VACUUM isd_daily;'
-
-log_info "parser=${PARSER}, input=${DATA_DIR}/${year}.tar.gz"
-${PARSER} -v -i "${DATA_DIR}/${year}.tar.gz" | psql ${PGURL} -AXtwqc "COPY isd_daily FROM STDIN CSV;"
+log_info "load data to isd_daily_stable"
+cat ${DATA_DIR}/isd_daily_stable.csv.gz | pv | gzip -d | psql ${PGURL} -AXtwc 'COPY isd_daily_stable FROM STDIN CSV HEADER;'

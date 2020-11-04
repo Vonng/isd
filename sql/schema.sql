@@ -16,9 +16,11 @@ DROP TABLE IF EXISTS isd_yearly;
 
 DROP FUNCTION IF EXISTS wind16(_i NUMERIC);
 DROP FUNCTION IF EXISTS wind8(_i NUMERIC);
+DROP FUNCTION IF EXISTS mwcode_name(mw_code text);
 DROP FUNCTION IF EXISTS china_geojson(codes INTEGER[]);
 DROP FUNCTION IF EXISTS world_geojson(scale TEXT, codes TEXT[]);
-DROP FUNCTION IF EXISTS create_isd_hourly_partition(_year INTEGER);
+DROP FUNCTION IF EXISTS create_isd_hourly_partition(_year INTEGER, _upper INTEGER);
+
 
 ----------------------------------------------------------------
 --                    Meta Table Schema                        -
@@ -78,7 +80,7 @@ CREATE INDEX ON isd_station USING GIST (period);
 -- isd_history
 --   Station historic observation summary
 ------------------------------------------------
-CREATE TABLE public.isd_inventory
+CREATE TABLE public.isd_history
 (
     station      VARCHAR(12),
     year         DATE,
@@ -102,31 +104,31 @@ CREATE TABLE public.isd_inventory
     PRIMARY KEY (station, year)
 );
 
-COMMENT ON TABLE isd_inventory IS 'ISD观测记录清单表';
-COMMENT ON COLUMN isd_inventory.station IS 'station name: usaf(6) + wban(5)';
-COMMENT ON COLUMN isd_inventory.year IS 'observe year';
-COMMENT ON COLUMN isd_inventory.usaf IS 'Air Force station ID(6). May contain a letter in the first position';
-COMMENT ON COLUMN isd_inventory.wban IS 'NCDC WBAN number, 5char';
-COMMENT ON COLUMN isd_inventory.country IS '2位国家代码，缺省值为NA';
-COMMENT ON COLUMN isd_inventory.active_month IS '当年存在观测记录的月份数量';
-COMMENT ON COLUMN isd_inventory.total IS '当年记录数';
-COMMENT ON COLUMN isd_inventory.m1 IS '1月份记录数';
-COMMENT ON COLUMN isd_inventory.m2 IS '2月份记录数';
-COMMENT ON COLUMN isd_inventory.m3 IS '3月份记录数';
-COMMENT ON COLUMN isd_inventory.m4 IS '4月份记录数';
-COMMENT ON COLUMN isd_inventory.m5 IS '5月份记录数';
-COMMENT ON COLUMN isd_inventory.m6 IS '6月份记录数';
-COMMENT ON COLUMN isd_inventory.m7 IS '7月份记录数';
-COMMENT ON COLUMN isd_inventory.m8 IS '8月份记录数';
-COMMENT ON COLUMN isd_inventory.m9 IS '9月份记录数';
-COMMENT ON COLUMN isd_inventory.m10 IS '10月份记录数';
-COMMENT ON COLUMN isd_inventory.m11 IS '11月份记录数';
-COMMENT ON COLUMN isd_inventory.m12 IS '12月份记录数';
+COMMENT ON TABLE isd_history IS 'ISD观测记录清单表';
+COMMENT ON COLUMN isd_history.station IS 'station name: usaf(6) + wban(5)';
+COMMENT ON COLUMN isd_history.year IS 'observe year';
+COMMENT ON COLUMN isd_history.usaf IS 'Air Force station ID(6). May contain a letter in the first position';
+COMMENT ON COLUMN isd_history.wban IS 'NCDC WBAN number, 5char';
+COMMENT ON COLUMN isd_history.country IS '2位国家代码，缺省值为NA';
+COMMENT ON COLUMN isd_history.active_month IS '当年存在观测记录的月份数量';
+COMMENT ON COLUMN isd_history.total IS '当年记录数';
+COMMENT ON COLUMN isd_history.m1 IS '1月份记录数';
+COMMENT ON COLUMN isd_history.m2 IS '2月份记录数';
+COMMENT ON COLUMN isd_history.m3 IS '3月份记录数';
+COMMENT ON COLUMN isd_history.m4 IS '4月份记录数';
+COMMENT ON COLUMN isd_history.m5 IS '5月份记录数';
+COMMENT ON COLUMN isd_history.m6 IS '6月份记录数';
+COMMENT ON COLUMN isd_history.m7 IS '7月份记录数';
+COMMENT ON COLUMN isd_history.m8 IS '8月份记录数';
+COMMENT ON COLUMN isd_history.m9 IS '9月份记录数';
+COMMENT ON COLUMN isd_history.m10 IS '10月份记录数';
+COMMENT ON COLUMN isd_history.m11 IS '11月份记录数';
+COMMENT ON COLUMN isd_history.m12 IS '12月份记录数';
 
 -- indexes
-CREATE UNIQUE INDEX ON isd_inventory (station, year);
-CREATE INDEX ON isd_inventory (year, country);
-CREATE INDEX ON isd_inventory (usaf);
+CREATE UNIQUE INDEX ON isd_history (station, year);
+CREATE INDEX ON isd_history (year, country);
+CREATE INDEX ON isd_history (usaf);
 
 
 ------------------------------------------------
@@ -249,11 +251,11 @@ COMMENT ON COLUMN china_fences.city IS '所属城市';
 COMMENT ON COLUMN china_fences.fence IS '地理边界';
 
 -- indexes
-CREATE INDEX china_fences_adcode_idx ON china_fences (adcode);
-CREATE INDEX china_fences_area_code_idx ON china_fences (area_code);
-CREATE INDEX china_fences_name_idx ON china_fences (name);
-CREATE INDEX china_fences ON china_fences (post_code);
-CREATE INDEX china_fences_fence_idx ON china_fences USING gist (fence);
+CREATE INDEX ON china_fences (adcode);
+CREATE INDEX ON china_fences (area_code);
+CREATE INDEX ON china_fences (name);
+CREATE INDEX ON china_fences (post_code);
+CREATE INDEX ON china_fences USING gist (fence);
 
 
 
@@ -393,7 +395,7 @@ CREATE TABLE IF NOT EXISTS public.isd_daily
     temp_max_f  BOOLEAN,              -- 同上，最高温度
     prcp_flag   CHAR,                 -- 降水量标记: ABCDEFGHI
     PRIMARY KEY (ts, station)
-);
+) PARTITION BY RANGE (ts);
 
 COMMENT ON TABLE isd_daily IS 'ISD每日摘要汇总表';
 COMMENT ON COLUMN isd_daily.station IS '台站号 6USAF+5WBAN';
@@ -427,8 +429,7 @@ COMMENT ON COLUMN isd_daily.temp_min_f IS '最低温度是统计得出（而非�
 COMMENT ON COLUMN isd_daily.temp_max_f IS '同上，最高温度';
 COMMENT ON COLUMN isd_daily.prcp_flag IS '降水量标记: ABCDEFGHI';
 
-CREATE INDEX IF NOT EXISTS isd_daily_station_ts_idx ON isd_daily (station, ts);
-COMMENT ON INDEX isd_daily_station_ts_idx IS '用于加速单Station历史数据查询';
+CREATE INDEX ON isd_daily (station, ts);
 
 
 ------------------------------------------------
@@ -471,7 +472,7 @@ CREATE TABLE IF NOT EXISTS public.isd_monthly
     vis_20_days  smallint,      -- 月能见度10-20km内日数
     vis_20p_days smallint,      -- 月能见度20km上日数
     primary key (ts, station)
-);
+) PARTITION BY RANGE (ts);
 
 COMMENT ON TABLE isd_monthly IS 'ISD月度统计摘要汇总';
 COMMENT ON COLUMN isd_monthly.ts IS '月份时间戳,yyyy-mm-01';
@@ -542,7 +543,7 @@ CREATE TABLE IF NOT EXISTS public.isd_yearly
     vis_20_days  smallint,      -- 年能见度10-20km内日数
     vis_20p_days smallint,      -- 年能见度20km上日数
     primary key (ts, station)
-);
+) PARTITION BY RANGE (ts);;
 
 COMMENT ON TABLE isd_yearly IS 'ISD年度统计摘要汇总';
 COMMENT ON COLUMN isd_yearly.ts IS '年份时间戳,yyyy-01-01';
@@ -577,8 +578,6 @@ COMMENT ON INDEX isd_yearly_station_ts_idx IS '用于加速单Station历史数�
 ----------------------------------------------------------------
 --                   Function Definition                       -
 ----------------------------------------------------------------
-
-
 ------------------------------------------------
 -- wind16
 --   turn 360 degree angle to 16 compass direction
@@ -628,18 +627,135 @@ $$ LANGUAGE SQL IMMUTABLE;
 COMMENT ON FUNCTION wind8(_i NUMERIC) IS '将0-360度转变为8向指南针方位标识';
 
 ------------------------------------------------
+-- mwcode_name(mw_code text)
+-- turn MW code into text representation
+------------------------------------------------
+CREATE OR REPLACE FUNCTION mwcode_name(mw_code text) RETURNS TEXT
+AS
+$$
+SELECT CASE mw_code::INTEGER
+           WHEN 0 THEN '云不可测'
+           WHEN 1 THEN '云渐消散'
+           WHEN 2 THEN '天像不变'
+           WHEN 3 THEN '云渐成型'
+           WHEN 4 THEN '烟遮视线'
+           WHEN 5 THEN '雾霭蒙蒙'
+           WHEN 6 THEN '灰尘弥漫'
+           WHEN 7 THEN '风带灰尘'
+           WHEN 8 THEN '风卷尘漫'
+           WHEN 9 THEN '沙尘暴'
+           WHEN 10 THEN '薄雾弥漫'
+           WHEN 11 THEN '薄雾零散'
+           WHEN 12 THEN '薄雾成片'
+           WHEN 13 THEN '可见闪电'
+           WHEN 14 THEN '雨不落地'
+           WHEN 15 THEN '雨落地面'
+           WHEN 16 THEN '雨落测站'
+           WHEN 17 THEN '雷鸣电闪'
+           WHEN 18 THEN '雨飑风啸'
+           WHEN 19 THEN '漏斗龙卷'
+           WHEN 20 THEN '毛毛细雨'
+           WHEN 21 THEN '细雨不落'
+           WHEN 22 THEN '细雪不落'
+           WHEN 23 THEN '细雨冰霜'
+           WHEN 24 THEN '毛毛冰雨'
+           WHEN 25 THEN '阵雨'
+           WHEN 26 THEN '阵雪'
+           WHEN 27 THEN '阵冰雹'
+           WHEN 28 THEN '雾与冰雾'
+           WHEN 29 THEN '雷暴'
+           WHEN 30 THEN '轻沙暴渐缓'
+           WHEN 31 THEN '轻沙暴维持'
+           WHEN 32 THEN '轻沙暴增强'
+           WHEN 33 THEN '强沙暴渐缓'
+           WHEN 34 THEN '强沙暴维持'
+           WHEN 35 THEN '强沙暴增强'
+           WHEN 36 THEN '轻飘雪减缓'
+           WHEN 37 THEN '重飘雪减缓'
+           WHEN 38 THEN '吹雪渐强'
+           WHEN 39 THEN '重飘雪走强'
+           WHEN 40 THEN '远方有雾'
+           WHEN 41 THEN '片状雾'
+           WHEN 42 THEN '雾缓天见'
+           WHEN 43 THEN '雾缓天蔽'
+           WHEN 44 THEN '雾恒天见'
+           WHEN 45 THEN '雾恒天蔽'
+           WHEN 46 THEN '雾浓天见'
+           WHEN 47 THEN '雾浓天蔽'
+           WHEN 48 THEN '雾凇天见'
+           WHEN 49 THEN '雾凇天蔽'
+           WHEN 50 THEN '雷断续毛毛雨'
+           WHEN 51 THEN '雷持续毛毛雨'
+           WHEN 52 THEN '雷中毛毛雨'
+           WHEN 53 THEN '雷中毛雨'
+           WHEN 54 THEN '雷大毛毛雨'
+           WHEN 55 THEN '雷大毛毛雨'
+           WHEN 56 THEN '雷冻小毛毛雨'
+           WHEN 57 THEN '雷冻大毛毛雨'
+           WHEN 58 THEN '雷轻毛毛雨'
+           WHEN 59 THEN '雷重毛毛雨'
+           WHEN 60 THEN '雷雨断续轻'
+           WHEN 61 THEN '雷雨持续轻'
+           WHEN 62 THEN '雷雨断续中'
+           WHEN 63 THEN '雷雨持续中'
+           WHEN 64 THEN '雷雨断续大'
+           WHEN 65 THEN '雷雨持续大'
+           WHEN 66 THEN '雷冻雨轻'
+           WHEN 67 THEN '雷冻雨重'
+           WHEN 68 THEN '雷冻雪轻'
+           WHEN 69 THEN '雷冻雪重'
+           WHEN 70 THEN '雷雪断续轻'
+           WHEN 71 THEN '雷雪持续轻'
+           WHEN 72 THEN '雷雪断续中'
+           WHEN 73 THEN '雷雪持续中'
+           WHEN 74 THEN '雷雪断续重'
+           WHEN 75 THEN '雷雪持续中'
+           WHEN 76 THEN '钻石星尘'
+           WHEN 77 THEN '雪粒'
+           WHEN 78 THEN '独立大雪花'
+           WHEN 79 THEN '冰颗粒'
+           WHEN 80 THEN '雷雨轻'
+           WHEN 81 THEN '雷雨重'
+           WHEN 82 THEN '雷夹特大雨'
+           WHEN 83 THEN '雷雨夹雪轻'
+           WHEN 84 THEN '雷雨夹雪重'
+           WHEN 85 THEN '雷雪轻'
+           WHEN 86 THEN '雷雪重'
+           WHEN 87 THEN '小冰雹'
+           WHEN 88 THEN '大冰雹'
+           WHEN 89 THEN '无雷冰雹轻'
+           WHEN 90 THEN '无雷冰雹重'
+           WHEN 91 THEN '轻雨带阵雷'
+           WHEN 92 THEN '重雨带阵雷'
+           WHEN 93 THEN '轻雪带阵雷'
+           WHEN 94 THEN '重雪带阵雷'
+           WHEN 95 THEN '雷暴雨无冰雹'
+           WHEN 96 THEN '雷暴夹冰雹'
+           WHEN 97 THEN '雷暴带雨无雹'
+           WHEN 98 THEN '雷暴夹沙暴'
+           WHEN 99 THEN '重雷暴夹冰雹'
+           ELSE '' END;
+$$ LANGUAGE SQL;
+COMMENT ON FUNCTION mwcode_name(mw_code text) IS '将2位数字MW天气代码转化为人类可读字符串';
+
+------------------------------------------------
 -- create_isd_hourly_partition
 --    create yearly partition of isd_hourly
 ------------------------------------------------
-CREATE OR REPLACE FUNCTION create_isd_hourly_partition(_year INTEGER) RETURNS TEXT AS
+CREATE OR REPLACE FUNCTION create_isd_hourly_partition(_year INTEGER, _upper INTEGER DEFAULT NULL) RETURNS TEXT AS
 $$
 DECLARE
+    -- _part_name TEXT := CASE _upper WHEN NULL THEN format('isd_hourly_%s', _year) ELSE format('isd_hourly_%s_%s', _year,_upper) END;
     _part_name TEXT := format('isd_hourly_%s', _year);
     _part_lo   DATE := make_date(_year, 1, 1);
-    _part_hi   DATE := make_date(_year + 1, 1, 1);
+    -- _part_hi   DATE := CASE _upper WHEN NULL THEN make_date(_year + 1, 1, 1) ELSE make_date(_upper, 1, 1) END;
+    _part_hi   DATE := coalesce(make_date(_upper, 1, 1), make_date(_year + 1, 1, 1));
     _sql       TEXT := format(
-            $sql$CREATE TABLE IF NOT EXISTS %s PARTITION OF public.isd_hourly FOR VALUES FROM ('%s') TO ('%s');$sql$
-        , _part_name, _part_lo, _part_hi);
+            $sql$
+            CREATE TABLE IF NOT EXISTS %s PARTITION OF public.isd_hourly FOR VALUES FROM ('%s') TO ('%s');
+            COMMENT ON TABLE %s IS 'isd_hourly partition from %s to %s';
+            $sql$
+        , _part_name, _part_lo, _part_hi, _part_name, _part_lo, _part_hi);
 BEGIN
     RAISE NOTICE '%', _sql;
     EXECUTE _SQL;
@@ -648,8 +764,7 @@ END;
 $$
     LANGUAGE PlPGSQL
     VOLATILE;
-
-COMMENT ON FUNCTION create_isd_hourly_partition(_year INTEGER) IS 'create yearly partition of isd_hourly';
+COMMENT ON FUNCTION create_isd_hourly_partition(_year INTEGER, _upper INTEGER) IS 'create yearly partition of isd_hourly';
 
 ------------------------------------------------
 -- world_geojson
@@ -725,9 +840,7 @@ BEGIN
 END;
 $$ STABLE LANGUAGE PlPGSQL
    PARALLEL SAFE;
-
 COMMENT ON FUNCTION world_geojson(scale TEXT, codes TEXT[]) IS 'generate geojson from world_fences';
-
 
 ------------------------------------------------
 -- china_geojson
@@ -799,6 +912,60 @@ BEGIN
 END;
 $$ STABLE LANGUAGE PlPGSQL
    PARALLEL SAFE;
-
 COMMENT ON FUNCTION china_geojson(codes INTEGER[]) IS 'generate geojson from china_fences';
+
+
+
+
+-------------------------------------------------
+-- create isd_hourly partitions
+-------------------------------------------------
+
+-----------------------------------
+-- cleanup all isd_hourly partitions
+-----------------------------------
+DO
+$$
+    DECLARE
+        _relname TEXT;
+    BEGIN
+        FOR _relname IN SELECT relname FROM pg_class WHERE relname ~ '^isd_hourly_\d{4}$'
+            LOOP
+                RAISE NOTICE 'DROP TABLE %s;', _relname;
+                EXECUTE 'DROP TABLE IF EXISTS ' || _relname || ';';
+            END LOOP;
+    END
+$$;
+
+-----------------------------------
+-- create all isd_hourly partitions
+-----------------------------------
+-- three merged partition: 50year, 10year, 10year
+SELECT create_isd_hourly_partition(1900, 1950); -- 20 GB
+SELECT create_isd_hourly_partition(1950, 1960); -- 47 GB
+SELECT create_isd_hourly_partition(1960, 1970); -- 41 GB
+
+-- the rest are yearly partition: from 1970 (10GB) to 2020 (41GB)
+SELECT create_isd_hourly_partition(year::INTEGER)
+FROM generate_series(1970, 2020) year;
+
+
+
+-------------------------------------------------
+-- create isd_daily / monthly / yearly partitions
+-------------------------------------------------
+CREATE TABLE IF NOT EXISTS isd_daily_stable PARTITION OF isd_daily FOR VALUES FROM ('1900-01-01') TO ('2020-01-01');
+CREATE TABLE IF NOT EXISTS isd_daily_latest PARTITION OF isd_daily FOR VALUES FROM ('2020-01-01') TO (MAXVALUE);
+COMMENT ON TABLE isd_daily_stable IS 'ISD年度摘要汇总表(稳定历史数据，2020前)';
+COMMENT ON TABLE isd_daily_latest IS 'ISD年度摘要汇总表(最近一年数据，2020后)';
+
+CREATE TABLE IF NOT EXISTS isd_monthly_stable PARTITION OF isd_monthly FOR VALUES FROM ('1900-01-01') TO ('2020-01-01');
+CREATE TABLE IF NOT EXISTS isd_monthly_latest PARTITION OF isd_monthly FOR VALUES FROM ('2020-01-01') TO (MAXVALUE);
+COMMENT ON TABLE isd_monthly_stable IS 'ISD年度摘要汇总表(稳定历史数据，2020前)';
+COMMENT ON TABLE isd_monthly_latest IS 'ISD年度摘要汇总表(最近一年数据，2020后)';
+
+CREATE TABLE IF NOT EXISTS isd_yearly_stable PARTITION OF isd_yearly FOR VALUES FROM ('1900-01-01') TO ('2020-01-01');
+CREATE TABLE IF NOT EXISTS isd_yearly_latest PARTITION OF isd_yearly FOR VALUES FROM ('2020-01-01') TO (MAXVALUE);
+COMMENT ON TABLE isd_yearly_stable IS 'ISD年度摘要汇总表(稳定历史数据，2020前)';
+COMMENT ON TABLE isd_yearly_latest IS 'ISD年度摘要汇总表(最近一年数据，2020后)';
 

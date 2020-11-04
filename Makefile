@@ -12,12 +12,12 @@
 ###############################################################
 
 # build hourly data parser
-isdd: bin/isdh
+isdd:
 	cd parser/isdd && go build
 	mv -f parser/isdd/isdd bin/isdd
 
 # build daily data parser
-isdh: bin/isdd
+isdh:
 	cd parser/isdh && go build
 	mv -f parser/isdh/isdh bin/isdh
 
@@ -32,6 +32,10 @@ get-isd-history:
 # dump meta data to data/meta dir
 dump-meta:
 	bin/dump-meta.sh
+
+# dump meta data to data/meta dir
+load-meta:
+	bin/load-meta.sh
 
 # download current year's daily data
 get-daily:
@@ -53,6 +57,11 @@ load-hourly:
 createdb:
 	psql postgres -c 'CREATE DATABASE isd;'
 	psql isd -c 'CREATE EXTENSION postgis;'
+
+schema:
 	psql isd -f sql/schema.sql
+
+partition:
+	psql isd -f sql/partition.sql
 
 .PHONY: get-daily-2020 get-hourly-2020 get-isd-station get-isd-history load-meta dump-meta load-daily load-hourly createdb
