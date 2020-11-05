@@ -9,6 +9,8 @@ isd.iml
 # parser binary (can be built from source)
 bin/isdd
 bin/isdh
+bin/release
+
 
 # data files (can be downloaded via Internet)
 data/daily/*.csv.gz
