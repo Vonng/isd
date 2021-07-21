@@ -15,7 +15,7 @@ PROG_NAME="$(basename $0)"
 PROJ_DIR=$(dirname $PROG_DIR)
 
 # PGURL specify target database connection string
-PGURL=${1-'isd'}
+PGURL=${1-'postgres:///'}
 PARSER="${PROJ_DIR}/bin/isdd"
 DATA_DIR="${PROJ_DIR}/data/daily"
 

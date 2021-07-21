@@ -9,6 +9,9 @@ isd.iml
 # parser binary (can be built from source)
 bin/isdd
 bin/isdh
+bin/isd_darwin-amd64.tar.gz
+bin/isd_linux-amd64.tar.gz
+bin/isd.tar.gz
 bin/release
 
 
