@@ -26,7 +26,7 @@ function get_daily_url(){
 }
 
 # PGURL specify target database connection string
-PGURL=${1-'isd'}
+PGURL=${1-'postgres:///isd'}
 PARSER="${PROJ_DIR}/bin/isdh"
 DATA_DIR="${PROJ_DIR}/data/hourly"
 LOG_DIR="${PROJ_DIR}/log"

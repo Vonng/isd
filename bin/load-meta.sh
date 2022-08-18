@@ -22,7 +22,7 @@ DATA_DIR="${PROJ_DIR}/data/meta"
 cd ${DATA_DIR}
 
 # PGURL specify target database connection string
-PGURL=${1-'postgres:///'}
+PGURL=${1-'postgres:///isd'}
 
 
 log_info "truncate meta tables"
@@ -60,7 +60,7 @@ CREATE TABLE isd.t_station
 EOF
 
 log_info "load isd station data into isd.t_station"
-cat ${DATA_DIR}/isd_station.csv.gz | gzip -d |
+cat ${DATA_DIR}/isd_station.csv.gz | gzip -d | \
   psql ${PGURL} -AXtwc "COPY isd.t_station FROM STDIN WITH (FORMAT CSV, HEADER ,FORCE_NULL (usaf,wban,name,ctry,st,icao,lat,lon,elev,begin_date,end_date));"
 
 log_info "build isd.station from isd.t_station"
