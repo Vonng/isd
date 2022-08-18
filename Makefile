@@ -21,7 +21,7 @@ baseline: sql ui download load-meta     # setup postgres database & grafana dash
 # Environment
 ###############################################################
 # your own environment
-PGURL?=postgres:///
+PGURL?=postgres:///isd
 GRAFANA_USERNAME=admin
 GRAFANA_PASSWORD=admin
 GRAFANA_ENDPOINT=http://localhost:3000
@@ -33,8 +33,8 @@ GRAFANA_ENDPOINT=http://localhost:3000
 # GRAFANA_ENDPOINT=http://10.10.10.10:3000
 
 show:
-	@echo ${PGURL}
-	psql ${PGURL} -c '\dt+ isd.*'
+	@echo $(PGURL)
+	psql $(PGURL) -c '\dt+ isd.*'
 ###############################################################
 
 
@@ -76,7 +76,7 @@ get-hourly:
 ###############################################################
 # create schema on local machine (DANGEROUS, will wipe isd schema)
 sql:
-	psql ${PGURL} -f sql/schema.sql
+	psql $(PGURL) -f sql/schema.sql
 
 
 ###############################################################
@@ -92,11 +92,11 @@ ui:
 
 # dump meta data to data/meta dir
 dump-meta:
-	bin/dump-meta.sh ${PGURL}
+	bin/dump-meta.sh $(PGURL)
 
 # dump meta data to data/meta dir
 load-meta:
-	bin/load-meta.sh ${PGURL}
+	bin/load-meta.sh $(PGURL)
 
 ###############################################################
 # Load ISD Observation Data
@@ -104,15 +104,15 @@ load-meta:
 
 # load current year hourly data (parser required)
 load-hourly:
-	bin/load-hourly.sh ${PGURL}
+	bin/load-hourly.sh $(PGURL)
 
 # load current year daily data  (parser required)
 load-daily:
-	bin/load-daily.sh ${PGURL}
+	bin/load-daily.sh $(PGURL)
 
 # refresh latest partition of monthly & yearly data
 refresh:
-	bin/refresh.sh ${PGURL}
+	bin/refresh.sh $(PGURL)
 
 
 ###############################################################
@@ -138,6 +138,15 @@ release-darwin:
 	upx isdd
 	tar -cf bin/release/isd_darwin-amd64.tar.gz isdh isdd
 
+release-darwin-arm:
+	cd parser/isdh && CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build  -a -ldflags '-extldflags "-static"' -o isdh
+	cd parser/isdd && CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build  -a -ldflags '-extldflags "-static"' -o isdd
+	mv -f parser/isdh/isdh isdh
+	mv -f parser/isdd/isdd isdd
+	upx isdh
+	upx isdd
+	tar -cf bin/release/isd_darwin-arm64.tar.gz isdh isdd
+
 release-linux:
 	cd parser/isdh && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build  -a -ldflags '-extldflags "-static"' -o isdh
 	cd parser/isdd && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build  -a -ldflags '-extldflags "-static"' -o isdd
@@ -153,4 +162,4 @@ clean:
 
 release: clean release-linux release-darwin
 
-.PHONY: sql ui get-daily-2020 get-hourly-2020 get-isd-station get-isd-history load-meta dump-meta load-daily load-hourly createdb
+.PHONY: sql ui get-isd-station get-isd-history load-meta dump-meta load-daily load-hourly createdb

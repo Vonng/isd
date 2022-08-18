@@ -2,9 +2,9 @@
 
 ## SYNOPSIS
 
-Download, Parse, Visualize Integrated Surface Dataset
+Download, Parse, Visualize Integrated Surface Weather Station Dataset
 
-Including 30000 meteorology station, sub-hourly observation records, from 1900-2021.
+Including 30000 meteorology station, daily, sub-hourly observation records, from 1900-2021.
 
 ![](doc/img/isd-overview.jpg)
 
@@ -29,7 +29,7 @@ make load-meta  # load meta-data into database
 
 ### Get This Year's Daily Summary
 
-Get latest daily observation summary (daily, monthly, yearly)
+Get the latest daily observation summary (daily, monthly, yearly)
 
 > NOTICE: Will download directly from noaa. (check your proxy if too slow! about 60MB per year)
 > around 3~4 GB original zipped file, 20 GB in database
@@ -92,9 +92,9 @@ bin/load-hourly.sh service=meta 2020
 | ISD Monthly | N/A                                                | [isd-gsom-document.pdf](doc/isd-gsom-document.pdf)     | Not used, gen from daily          |
 | ISD Yearly  | N/A                                                | [isd-gsoy-document.pdf](doc/isd-gsoy-document.pdf)     | Not used, gen from monthly        |
 
-Hourly Data: Oringinal tarball size 105GB, Table size 1TB (+600GB Indexes).
+Hourly Data: Original tarball size 105GB, Table size 1TB (+600GB Indexes).
 
-Daily Data: Oringinal tarball size 3.2GB, table size 24 GB
+Daily Data: Original tarball size 3.2GB, table size 24 GB
 
 It is recommended to have 2TB storage for a full installation, and at least 40GB for daily data only installation.  
 
@@ -218,7 +218,6 @@ OPTIONS
 	-d                de-duplicate rows (raw, ts-first, hour-first)
 	-c                add comma separated extra columns
 ```
-
 
 
 ## UI

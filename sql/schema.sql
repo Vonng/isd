@@ -933,26 +933,26 @@ SELECT isd.create_partition(1960, 1970); -- 41 GB
 
 -- the rest are yearly partition: from 1970 (10GB) to 2020 (41GB)
 SELECT isd.create_partition(year::INTEGER)
-FROM generate_series(1970, 2021) year;
+FROM generate_series(1970, 2022) year;
 
 
 -------------------------------------------------
 -- create isd_daily / monthly / yearly partitions
 -------------------------------------------------
-CREATE TABLE IF NOT EXISTS isd.daily_stable PARTITION OF isd.daily FOR VALUES FROM ('1900-01-01') TO ('2021-01-01');
-CREATE TABLE IF NOT EXISTS isd.daily_latest PARTITION OF isd.daily FOR VALUES FROM ('2021-01-01') TO (MAXVALUE);
-COMMENT ON TABLE isd.daily_stable IS 'isd daily summary (stable history before 2021)';
-COMMENT ON TABLE isd.daily_latest IS 'isd daily summary (latest updates in 2021)';
+CREATE TABLE IF NOT EXISTS isd.daily_stable PARTITION OF isd.daily FOR VALUES FROM ('1900-01-01') TO ('2022-01-01');
+CREATE TABLE IF NOT EXISTS isd.daily_latest PARTITION OF isd.daily FOR VALUES FROM ('2022-01-01') TO (MAXVALUE);
+COMMENT ON TABLE isd.daily_stable IS 'isd daily summary (stable history before 2022)';
+COMMENT ON TABLE isd.daily_latest IS 'isd daily summary (latest updates in 2022)';
 
-CREATE TABLE IF NOT EXISTS isd.monthly_stable PARTITION OF isd.monthly FOR VALUES FROM ('1900-01-01') TO ('2021-01-01');
-CREATE TABLE IF NOT EXISTS isd.monthly_latest PARTITION OF isd.monthly FOR VALUES FROM ('2021-01-01') TO (MAXVALUE);
-COMMENT ON TABLE isd.monthly_stable IS 'isd monthly summary (stable history before 2021)';
-COMMENT ON TABLE isd.monthly_latest IS 'isd monthly summary (latest updates in 2021)';
+CREATE TABLE IF NOT EXISTS isd.monthly_stable PARTITION OF isd.monthly FOR VALUES FROM ('1900-01-01') TO ('2022-01-01');
+CREATE TABLE IF NOT EXISTS isd.monthly_latest PARTITION OF isd.monthly FOR VALUES FROM ('2022-01-01') TO (MAXVALUE);
+COMMENT ON TABLE isd.monthly_stable IS 'isd monthly summary (stable history before 2022)';
+COMMENT ON TABLE isd.monthly_latest IS 'isd monthly summary (latest updates in 2022)';
 
-CREATE TABLE IF NOT EXISTS isd.yearly_stable PARTITION OF isd.yearly FOR VALUES FROM ('1900-01-01') TO ('2021-01-01');
-CREATE TABLE IF NOT EXISTS isd.yearly_latest PARTITION OF isd.yearly FOR VALUES FROM ('2021-01-01') TO (MAXVALUE);
-COMMENT ON TABLE isd.yearly_stable IS 'isd yearly summary (stable history before 2021)';
-COMMENT ON TABLE isd.yearly_latest IS 'isd yearly summary (latest updates in 2021)';
+CREATE TABLE IF NOT EXISTS isd.yearly_stable PARTITION OF isd.yearly FOR VALUES FROM ('1900-01-01') TO ('2022-01-01');
+CREATE TABLE IF NOT EXISTS isd.yearly_latest PARTITION OF isd.yearly FOR VALUES FROM ('2022-01-01') TO (MAXVALUE);
+COMMENT ON TABLE isd.yearly_stable IS 'isd yearly summary (stable history before 2022)';
+COMMENT ON TABLE isd.yearly_latest IS 'isd yearly summary (latest updates in 2022)';
 
 
 ------------------------------------------------
