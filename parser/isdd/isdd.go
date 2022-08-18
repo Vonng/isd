@@ -7,14 +7,13 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"runtime/pprof"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/sirupsen/logrus"
 )
 
 // Usage will print usage and exit
@@ -41,9 +40,11 @@ OPTIONS
 	os.Exit(0)
 }
 
-/**********************************************************************\
+/*
+*********************************************************************\
 *                           Record                                     *
-\**********************************************************************/
+\*********************************************************************
+*/
 type Record struct {
 	ID             string // 0 Station ID
 	Date           string // 1 UTC Date
@@ -158,7 +159,7 @@ func ParseMetric(metric, missingValue string, scale int) (res string) {
 	}
 	v, err := strconv.ParseInt(metric, 10, 64)
 	if err != nil {
-		logrus.Errorf("malformed metric %s", metric)
+		log.Printf("[ERROR] malformed metric %s", metric)
 		return ""
 	}
 	switch scale {
@@ -181,7 +182,7 @@ func ParseMetricScale(metric, missingValue string, scale float64, prec int) (res
 	}
 	v, err := strconv.ParseFloat(metric, 64)
 	if err != nil {
-		logrus.Errorf("malformed metric %s", metric)
+		log.Printf("[ERROR] malformed metric %s", metric)
 		return ""
 	}
 	return strconv.FormatFloat(float64(v)*scale, 'f', prec, 32)
@@ -194,7 +195,7 @@ func ParsePressure(pStr string) (res string) {
 	}
 	v, err := strconv.ParseFloat(pStr, 64)
 	if err != nil {
-		logrus.Errorf("malformed pressure %s", pStr)
+		log.Printf("[ERROR] malformed pressure %s", pStr)
 		return ""
 	}
 	return strconv.FormatFloat(v, 'f', 1, 32) // millibar = hPa = 100 pascal
@@ -207,7 +208,7 @@ func ParseTemperature(tempStr string) (res string) {
 	}
 	v, err := strconv.ParseFloat(tempStr, 64)
 	if err != nil {
-		logrus.Errorf("malformed temperature %s", tempStr)
+		log.Printf("[ERROR] malformed temperature %s", tempStr)
 		return ""
 	}
 	v = (v - 32.0) * 5 / 9.0
@@ -217,7 +218,7 @@ func ParseTemperature(tempStr string) (res string) {
 func ParseInt(intStr string) (res string) {
 	v, err := strconv.ParseInt(strings.Trim(intStr, " "), 10, 32)
 	if err != nil {
-		logrus.Errorf("malformed integer %s", intStr)
+		log.Printf("[ERROR] malformed integer %s", intStr)
 		return ""
 	}
 	return strconv.FormatInt(v, 10)
@@ -263,9 +264,11 @@ func (r *Record) FormatRecord() []string {
 	}
 }
 
-/**********************************************************************\
+/*
+*********************************************************************\
 *                           Station                                    *
-\**********************************************************************/
+\*********************************************************************
+*/
 type Station struct {
 	ID               string
 	Date             string
@@ -384,7 +387,7 @@ func NewProcessor(args ...string) (p *Processor) {
 
 func (p *Processor) Run() error {
 	p.StartAt = time.Now()
-	logrus.Infof("Processor [%s] [%s], %s -> %s init", p.DedupeMode, strings.Join(p.ExtraColumns, ","), p.SourcePath, p.OutputPath)
+	log.Printf("Processor [%s] [%s], %s -> %s init", p.DedupeMode, strings.Join(p.ExtraColumns, ","), p.SourcePath, p.OutputPath)
 
 	p.wg.Add(2)
 	go p.Writer()
@@ -394,7 +397,7 @@ func (p *Processor) Run() error {
 	}
 
 	p.wg.Wait()
-	logrus.Infof("Process done")
+	log.Printf("Process done")
 	return nil
 }
 
@@ -404,7 +407,7 @@ func (p *Processor) Reporter() {
 	for {
 		select {
 		case <-ticker.C:
-			logrus.Infof("[F: %5d -> %-5d] [L: %10d -> %-10d] [B: %10s] [Q: %5d]",
+			log.Printf("[F: %5d -> %-5d] [L: %10d -> %-10d] [B: %10s] [Q: %5d]",
 				p.readerFileCnt, p.writerFileCnt, p.readerLineCnt, p.writerLineCnt, ByteCountIEC(p.readerByteCnt), len(p.DataChan))
 		}
 	}
@@ -421,18 +424,18 @@ func (p *Processor) Writer() {
 	}
 	defer p.OutputFile.Close()
 
-	logrus.Infof("Writer %s init", p.OutputPath)
+	log.Printf("Writer %s init", p.OutputPath)
 	for data := range p.DataChan {
 		station := ParseStation(data, p.DedupeMode)
 		if err = station.WriteCSV(p.OutputFile); err != nil {
-			logrus.Errorf("Writer %s exit", p.OutputPath)
+			log.Printf("[ERROR] Writer %s exit", p.OutputPath)
 			panic(err)
 		}
 		p.writerFileCnt += 1
 		p.writerLineCnt += len(station.Data)
 	}
 	p.wg.Done()
-	logrus.Infof("Writer %s done", p.OutputPath)
+	log.Printf("Writer %s done", p.OutputPath)
 
 }
 
@@ -456,7 +459,7 @@ func (p *Processor) Reader() {
 	tr := tar.NewReader(gr)
 
 	// reader main loop
-	logrus.Infof("Reader %s init", p.SourcePath)
+	log.Printf("Reader %s init", p.SourcePath)
 	for {
 		// read next csv file
 		hdr, err := tr.Next()
@@ -489,7 +492,7 @@ func (p *Processor) Reader() {
 		p.readerLineCnt += len(data)
 
 	}
-	logrus.Infof("Reader %s done", p.SourcePath)
+	log.Printf("Reader %s done", p.SourcePath)
 
 	close(p.DataChan)
 	p.wg.Done()

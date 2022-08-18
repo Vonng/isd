@@ -7,8 +7,8 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"io"
+	"log"
 	"os"
 	"runtime/pprof"
 	"strconv"
@@ -41,9 +41,11 @@ OPTIONS
 	os.Exit(0)
 }
 
-/**********************************************************************\
+/*
+*********************************************************************\
 *                           Record                                     *
-\**********************************************************************/
+\*********************************************************************
+*/
 type Record struct {
 	ID           string // station ID
 	TS           string // timestamp in UTC
@@ -154,9 +156,11 @@ func (r *Record) FormatRecord() []string {
 	}
 }
 
-/**********************************************************************\
+/*
+*********************************************************************\
 *                           Station                                    *
-\**********************************************************************/
+\*********************************************************************
+*/
 type Station struct {
 	ID               string
 	Year             string
@@ -340,7 +344,7 @@ func (s *Station) ParseRecord(d []string) (r *Record) {
 		}
 	}
 	if jsonStr, err := json.Marshal(data); err != nil {
-		logrus.Errorf("json marshal error %s", err.Error())
+		log.Printf("[ERROR] json marshal error %s", err.Error())
 	} else {
 		r.Data = string(jsonStr)
 	}
@@ -450,7 +454,7 @@ func NewProcessor(args ...string) (p *Processor) {
 
 func (p *Processor) Run() error {
 	p.StartAt = time.Now()
-	logrus.Infof("Processor [%s] [%s], %s -> %s init", p.DedupeMode, strings.Join(p.ExtraColumns, ","), p.SourcePath, p.OutputPath)
+	log.Printf("Processor [%s] [%s], %s -> %s init", p.DedupeMode, strings.Join(p.ExtraColumns, ","), p.SourcePath, p.OutputPath)
 
 	p.wg.Add(2)
 	go p.Writer()
@@ -460,7 +464,7 @@ func (p *Processor) Run() error {
 	}
 
 	p.wg.Wait()
-	logrus.Infof("Process done")
+	log.Printf("Process done")
 	return nil
 }
 
@@ -470,7 +474,7 @@ func (p *Processor) Reporter() {
 	for {
 		select {
 		case <-ticker.C:
-			logrus.Infof("[F: %5d -> %-5d] [L: %10d -> %-10d] [B: %10s] [Q: %5d]",
+			log.Printf("[F: %5d -> %-5d] [L: %10d -> %-10d] [B: %10s] [Q: %5d]",
 				p.readerFileCnt, p.writerFileCnt, p.readerLineCnt, p.writerLineCnt, ByteCountIEC(p.readerByteCnt), len(p.DataChan))
 		}
 	}
@@ -487,11 +491,11 @@ func (p *Processor) Writer() {
 	}
 	defer p.OutputFile.Close()
 
-	logrus.Infof("Writer %s init", p.OutputPath)
+	log.Printf("Writer %s init", p.OutputPath)
 	for data := range p.DataChan {
 		station := ParseStation(data, p.DedupeMode)
 		if err = station.WriteCSV(p.OutputFile); err != nil {
-			logrus.Errorf("Writer %s exit", p.OutputPath)
+			log.Printf("[ERROR] Writer %s exit", p.OutputPath)
 			panic(err)
 		}
 		p.writerFileCnt += 1
@@ -499,7 +503,7 @@ func (p *Processor) Writer() {
 		p.writerLineCnt += len(station.Data)
 	}
 	p.wg.Done()
-	logrus.Infof("Writer %s done", p.OutputPath)
+	log.Printf("Writer %s done", p.OutputPath)
 
 }
 
@@ -523,7 +527,7 @@ func (p *Processor) Reader() {
 	tr := tar.NewReader(gr)
 
 	// reader main loop
-	logrus.Infof("Reader %s init", p.SourcePath)
+	log.Printf("Reader %s init", p.SourcePath)
 	for {
 		// read next csv file
 		hdr, err := tr.Next()
@@ -556,7 +560,7 @@ func (p *Processor) Reader() {
 		p.readerLineCnt += len(data)
 
 	}
-	logrus.Infof("Reader %s done", p.SourcePath)
+	log.Printf("Reader %s done", p.SourcePath)
 
 	close(p.DataChan)
 	p.wg.Done()
