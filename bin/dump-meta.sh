@@ -21,7 +21,7 @@ DATA_DIR="${PROJ_DIR}/data/meta"
 cd ${DATA_DIR}
 
 # PGURL specify target database connection string
-PGURL=${1-'postgres:///'}
+PGURL=${1-'postgres:///isd'}
 
 
 log_info "dump china_fences to china_fences.csv.gz"

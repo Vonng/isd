@@ -2,14 +2,16 @@
 set -uo pipefail
 
 #==============================================================#
-# File      :   load-isd-daily.sh
-# Mtime     :   2020-11-03
-# Desc      :   Load ISD daily Dataset (specific year) to database
-# Path      :   bin/load-isd-daily.sh
+# File      :   load-daily-stable.sh
+# Ctime     :   2020-11-03
+# Mtime     :   2022-08-19
+# Desc      :   Load isd daily data, stable part (before 2022)
+# Path      :   bin/load-daily-table.sh
 # Author    :   Vonng(fengruohang@outlook.com)
-# Depend    :   curl
-# Usage     :   bin/load-isd-daily.sh [pgurl=isd] [year=2020]
+# Depend    :   curl,pv,psql data/daily/isd_daily_stable.csv.gz
+# Usage     :   bin/load-daily-stable.sh [pgurl=isd]
 #==============================================================#
+
 PROG_DIR="$(cd $(dirname $0) && pwd)"
 PROG_NAME="$(basename $0)"
 PROJ_DIR=$(dirname $PROG_DIR)
