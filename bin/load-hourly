@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+set -uo pipefail
+#==============================================================#
+# File      :   load-hourly
+# Desc      :   load this year's isd.hourly from data/hourly/year.tar.gz
+# Ctime     :   2020-11-03
+# Mtime     :   2023-06-23
+# Path      :   bin/load-hourly
+# Author    :   Ruohang Feng (rh@vonng.com)
+# License   :   Apache-2.0
+#==============================================================#
+
+
+#--------------------------------------------------------------#
+# Usage
+#--------------------------------------------------------------#
+# bin/load-hourly [pgurl=postgres:///] [year=this-year]
+# bin/load-hourly
+# bin/load-hourly postgres:///isd
+# bin/load-hourly postgres:/// 2023
+
+
+#--------------------------------------------------------------#
+# Param
+#--------------------------------------------------------------#
+PGURL=${1-'postgres:///'}
+year=${2-$(date '+%Y')}
+
+PROG_DIR="$(cd $(dirname $0) && pwd)"
+PROG_NAME="$(basename $0)"
+PROJ_DIR=$(dirname $PROG_DIR)
+PARSER="${PROJ_DIR}/bin/isd"
+DATA_DIR="${PROJ_DIR}/data/hourly"
+DATA_FILE="${DATA_DIR}/${year}.tar.gz"
+next_year=$((year+1))
+
+
+#--------------------------------------------------------------#
+# Utils
+#--------------------------------------------------------------#
+__CN='\033[0m';__CB='\033[0;30m';__CR='\033[0;31m';__CG='\033[0;32m';
+__CY='\033[0;33m';__CB='\033[0;34m';__CM='\033[0;35m';__CC='\033[0;36m';__CW='\033[0;37m';
+function log_info() {  printf "[${__CG} OK ${__CN}] ${__CG}$*${__CN}\n";   }
+function log_warn() {  printf "[${__CY}WARN${__CN}] ${__CY}$*${__CN}\n";   }
+function log_error() { printf "[${__CR}FAIL${__CN}] ${__CR}$*${__CN}\n";   }
+function log_debug() { printf "[${__CB}HINT${__CN}] ${__CB}$*${__CN}\n"; }
+function log_input() { printf "[${__CM} IN ${__CN}] ${__CM}$*\n=> ${__CN}"; }
+function log_hint()  { printf "${__CB}$*${__CN}"; }
+
+
+#--------------------------------------------------------------#
+# Check
+#--------------------------------------------------------------#
+# check if given url is a number
+if [[ ${PGURL} =~ ^[0-9]+$ ]]; then
+    log_error "pgurl ${PGURL} looks like a year number, are your sure?"
+    log_hint "bin/load-hourly [PGURL=postgres:///] [YEAR=${year}]"
+    exit 1
+fi
+
+if (( year > 2024 )); then
+    log_info "year ${year} overflow"
+    exit 2
+fi
+
+if (( year < 1900 )); then
+    log_info "year ${year} underflow"
+    exit 3
+fi
+
+if ! psql ${PGURL} -AXtwqc 'SELECT 1'  >/dev/null ; then
+    log_error "failed to connect to database: ${PGURL}"
+    exit 4
+fi
+
+# check PARSER exists and is executable
+if [[ ! -x ${PARSER} ]]; then
+    log_error "parser not found: ${PARSER}"
+    log_hint "get parser with: make get-parser"
+    exit 4
+fi
+
+# check data file exists
+if [[ ! -f ${DATA_FILE} ]]; then
+    log_error "data file not found: ${DATA_FILE}"
+    log_hint "get data file with: make get-hourly, or bin/get-hourly ${year}"
+    exit 5
+fi
+
+
+#--------------------------------------------------------------#
+# Main
+#--------------------------------------------------------------#
+# make sure hourly partition exists
+log_info "create isd.hourly partition for year ${year}"
+psql ${PGURL} -AXtwc "SELECT isd.create_partition(${year})";
+
+# truncate this year's hourly partition
+log_warn "truncate isd.hourly partition for year ${year}"
+psql ${PGURL} -AXtwc "TRUNCATE isd.hourly_${year}";
+
+# load hourly data into isd.hourly
+log_info "load isd.hourly data for year ${year}"
+${PARSER} hourly -v -i "${DATA_DIR}/${year}.tar.gz" | psql ${PGURL} -AXtwc "COPY isd.hourly FROM STDIN CSV;"

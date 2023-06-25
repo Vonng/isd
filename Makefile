@@ -37,7 +37,8 @@ summary:
 #=============================================================#
 # Public API
 #=============================================================#
-all: sql ui reload
+all: sql ui data
+data: reload
 reload: reload-station reload-daily
 reload-daily:   get-daily   load-daily   refresh
 reload-hourly:  get-hourly  load-hourly
@@ -148,7 +149,7 @@ build:
 	cd parser && CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o isd
 	mv -f parser/isd bin/isd
 clean:
-	rm -rf isd bin/isdd
+	rm -rf isd bin/isd bin/isd-*.tar.gz
 parser: get-parser
 get-parser:
 	bin/get-parser
@@ -178,7 +179,7 @@ checksums:
 
 
 .PHONY: default summary all \
-		reload reload-daily reload-hourly reload-station \
+		data reload reload-daily reload-hourly reload-station \
 		get-station get-daily get-hourly get-latest \
 		load-station load-daily load-hourly \
 		stable get-stable dump-stable load-stable \

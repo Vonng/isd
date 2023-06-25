@@ -1,83 +1,72 @@
-# ISD —— Integrated Surface Data
+# ISD —— Integrated Surface Dataset
+
 
 ## SYNOPSIS
 
 Download, Parse, Visualize Integrated Surface Weather Station Dataset
 
-Including 30000 meteorology station, daily, sub-hourly observation records, from 1900-2021.
+Including 30000 meteorology station, daily, sub-hourly observation records, from 1900-2023.
+
+It is recommended to use with [Pigsty](https://github.com/Vonng/pigsty), the battery-included PostgreSQL distribution with Grafana & echarts for visualization.
 
 ![](doc/img/isd-overview.jpg)
 
 
+
 ## Quick Start
 
-`make all` will just setup everything
+Prepare a PostgreSQL Instance, and provide `PGURL` in [`Makefile`](Makefile) or pass it as environment variable.
 
-> Internet (Github & noaa) access required
+You will have a viable parser to load daily/hourly data into database:
 
+```bash
+make build        # build with go if you have the toolchain
+make get-parser   # just download the parser binary from github
+```
 
-### Make Baseline Works
-
-Run `make baseline` will create a minimal usable production via:
+Then `make all` will just set everything up for you in the postgres database. Which actually does:
 
 ```bash
 make sql        # load isd database schema into postgres (via PGURL env)
 make ui         # setup grafana dashboards
-make download   # download meta data (dict) & parsers
-make load-meta  # load meta-data into database
+make data       # load latest station metadata & this year's daily observation data
 ```
 
-### Get This Year's Daily Summary
-
-Get the latest daily observation summary (daily, monthly, yearly)
-
-> NOTICE: Will download directly from noaa. (check your proxy if too slow! about 60MB per year)
-> around 3~4 GB original zipped file, 20 GB in database
-
-Run `make reload` will load minimal data (this year so far) to database.
+The `reload` command will refresh the database with latest data, or you can refresh them separately:
 
 ```bash
-make get-daily   # get latest observation daily summary (of latest year e.g 2021)
-make load-daily  # load latest daily data into database (of latest year e.g 2021)
-make refresh     # refresh monthly & yearly data based on daily data 
-```
-ISD Daily and ISD hourly dataset will roll update each day. Run these commands to get daily update.
-
-
-### Get This Year's Hourly Raw Data
-
-Get the latest hourly observation raw data (not recommended)
-
-> WARNING: hourly raw data are large dataset with tons of noisy. around 5GB per year
-> around 100 GB original zipped file, 1TB in database
-
-Run `make reload-hourly` will load minimal raw data (this year so far) to database.
-
-```bash
-make get-hourly   # get latest observation daily summary (of latest year e.g 2021)
-make load-hourly  # load latest daily data into database (of latest year e.g 2021) 
+make reload             # reload-station + reload-daily
+make reload-station     # download and reload station metadata
+make reload-daily       # download and reload latest daily data and re-calculates monthly/yearly data
+make reload-hourly      # optional: download and reload latest hourly data of this year
 ```
 
-### Pour more historic data
 
-You can download hourly & daily data by specific year.
+### Get More
+
+You can get the latest dataset of this year via, It's nice to update them regularly.
 
 ```bash
-# bin/get-daily.sh <year> will get specific year's observation daily summary (1929-2021)
-bin/get-daily.sh 2020     # get 2020 data
-
-# bin/get-hourly.sh <year> will get latest observation daily summary (1900-2021)
-bin/get-hourly.sh 2020 
+make get-station    # get latest station metadata
+make get-daily       # get daily observation summary of the latest year (2023)
+make get-hourly      # get sub-hourly observation record of the latest year (2023)
 ```
 
-And load them into database with parser:
+If you wish to get daily/hourly data of a specific year, use `get-daily`, and `get-hourly` scripts.
 
 ```bash
-# bin/load-daily.sh <PGURL> <year> will load <year>'s daily summary into PGURL database 
-bin/load-daily.sh service=meta 2020     # note there may have some dirty data that violate constraints
+bin/get-daily  2022  # get daily observation summary of a specific year (1900-2023)
+bin/get-hourly 2022  # get sub-hourly observation record of a specific year (1900-2023)
+```
 
-# bin/load-hourly.sh <PGURL> <year> will load <year>'s raw hourly data into PGURL database
-bin/load-hourly.sh service=meta 2020
+
+### Get Stable  
+
+The daily dataset has a stable, cleansed CSV version (around 2.8GB) which can be downloaded and loaded directly without parser.
+
+```bash
+bin/get-stable
+bin/load-stable
 ```
 
 
@@ -101,9 +90,11 @@ It is recommended to have 2TB storage for a full installation, and at least 40GB
 
 ### Schema
 
-Data schema [definition](sql/schema.sql)
+- [sql/1_schema.sql](sql/1_schema.sql) : isd schema
+- [sql/2_record.sql](sql/2_record.sql) : daily, monthly, yearly table schema
+- [sql/3_hourly.sql](sql/3_hourly.sql) : optional hourly data schema
+- [sql/4_data.sql](sql/4_data.sql) : dict, map, country data
 
-#### Station
 
 ```sql
 CREATE TABLE isd.station
@@ -125,116 +116,144 @@ CREATE TABLE isd.station
 );
 ```
 
-#### Hourly Data
 
 ```sql
-CREATE TABLE isd.hourly
+CREATE TABLE IF NOT EXISTS isd.daily
 (
-    station    VARCHAR(11) NOT NULL,
-    ts         TIMESTAMP   NOT NULL,
-    temp       NUMERIC(3, 1),
-    dewp       NUMERIC(3, 1),
-    slp        NUMERIC(5, 1),
-    stp        NUMERIC(5, 1),
-    vis        NUMERIC(6),
-    wd_angle   NUMERIC(3),
-    wd_speed   NUMERIC(4, 1),
-    wd_gust    NUMERIC(4, 1),
-    wd_code    VARCHAR(1),
-    cld_height NUMERIC(5),
-    cld_code   VARCHAR(2),
-    sndp       NUMERIC(5, 1),
-    prcp       NUMERIC(5, 1),
-    prcp_hour  NUMERIC(2),
-    prcp_code  VARCHAR(1),
-    mw_code    VARCHAR(2),
-    aw_code    VARCHAR(2),
-    pw_code    VARCHAR(1),
-    pw_hour    NUMERIC(2),
-    data       JSONB
+    station     VARCHAR(12) NOT NULL, -- station number 6USAF+5WBAN
+    ts          DATE        NOT NULL, -- observation date
+    -- temperature & dew point
+    temp_mean   NUMERIC(3, 1),        -- mean temperature ℃
+    temp_min    NUMERIC(3, 1),        -- min temperature ℃
+    temp_max    NUMERIC(3, 1),        -- max temperature ℃
+    dewp_mean   NUMERIC(3, 1),        -- mean dew point (℃)
+    -- pressure
+    slp_mean    NUMERIC(5, 1),        -- sea level pressure (hPa)
+    stp_mean    NUMERIC(5, 1),        -- station pressure (hPa)
+    -- visible distance
+    vis_mean    NUMERIC(6),           -- visible distance (m)
+    -- wind speed
+    wdsp_mean   NUMERIC(4, 1),        -- average wind speed (m/s)
+    wdsp_max    NUMERIC(4, 1),        -- max wind speed (m/s)
+    gust        NUMERIC(4, 1),        -- max wind gust (m/s) 
+    -- precipitation / snow depth
+    prcp_mean   NUMERIC(5, 1),        -- precipitation (mm)
+    prcp        NUMERIC(5, 1),        -- rectified precipitation (mm)
+    sndp        NuMERIC(5, 1),        -- snow depth (mm)
+    -- FRSHTT (Fog/Rain/Snow/Hail/Thunder/Tornado)
+    is_foggy    BOOLEAN,              -- (F)og
+    is_rainy    BOOLEAN,              -- (R)ain or Drizzle
+    is_snowy    BOOLEAN,              -- (S)now or pellets
+    is_hail     BOOLEAN,              -- (H)ail
+    is_thunder  BOOLEAN,              -- (T)hunder
+    is_tornado  BOOLEAN,              -- (T)ornado or Funnel Cloud
+    -- record count
+    temp_count  SMALLINT,             -- record count for temp
+    dewp_count  SMALLINT,             -- record count for dew point
+    slp_count   SMALLINT,             -- record count for sea level pressure
+    stp_count   SMALLINT,             -- record count for station pressure
+    wdsp_count  SMALLINT,             -- record count for wind speed
+    visib_count SMALLINT,             -- record count for visible distance
+    -- temp marks
+    temp_min_f  BOOLEAN,              -- aggregate min temperature
+    temp_max_f  BOOLEAN,              -- aggregate max temperature
+    prcp_flag   CHAR,                 -- precipitation flag: ABCDEFGHI
+    PRIMARY KEY (station, ts)
+); -- PARTITION BY RANGE (ts);
+
+```
+
+
+
+<details><summary>ISD Hourly</summary>
+
+```sql
+CREATE TABLE IF NOT EXISTS isd.hourly
+(
+    station    VARCHAR(12) NOT NULL, -- station id
+    ts         TIMESTAMP   NOT NULL, -- timestamp
+    -- air
+    temp       NUMERIC(3, 1),        -- [-93.2,+61.8]
+    dewp       NUMERIC(3, 1),        -- [-98.2,+36.8]
+    slp        NUMERIC(5, 1),        -- [8600,10900]
+    stp        NUMERIC(5, 1),        -- [4500,10900]
+    vis        NUMERIC(6),           -- [0,160000]
+    -- wind
+    wd_angle   NUMERIC(3),           -- [1,360]
+    wd_speed   NUMERIC(4, 1),        -- [0,90]
+    wd_gust    NUMERIC(4, 1),        -- [0,110]
+    wd_code    VARCHAR(1),           -- code that denotes the character of the WIND-OBSERVATION.
+    -- cloud
+    cld_height NUMERIC(5),           -- [0,22000]
+    cld_code   VARCHAR(2),           -- cloud code
+    -- water
+    sndp       NUMERIC(5, 1),        -- mm snow
+    prcp       NUMERIC(5, 1),        -- mm precipitation
+    prcp_hour  NUMERIC(2),           -- precipitation duration in hour
+    prcp_code  VARCHAR(1),           -- precipitation type code
+    -- sky
+    mw_code    VARCHAR(2),           -- manual weather observation code
+    aw_code    VARCHAR(2),           -- auto weather observation code
+    pw_code    VARCHAR(1),           -- weather code of past period of time
+    pw_hour    NUMERIC(2),           -- duration of pw_code period
+    -- misc
+    -- remark     TEXT,
+    -- eqd        TEXT,
+    data       JSONB                 -- extra data
 ) PARTITION BY RANGE (ts);
 ```
 
-#### Daily Data
+</details>
 
-```sql
-CREATE TABLE isd.daily
-(
-   station     VARCHAR(12) NOT NULL,
-   ts          DATE        NOT NULL,
-   temp_mean   NUMERIC(3, 1),
-   temp_min    NUMERIC(3, 1),
-   temp_max    NUMERIC(3, 1),
-   dewp_mean   NUMERIC(3, 1),
-   slp_mean    NUMERIC(5, 1),
-   stp_mean    NUMERIC(5, 1),
-   vis_mean    NUMERIC(6),
-   wdsp_mean   NUMERIC(4, 1),
-   wdsp_max    NUMERIC(4, 1),
-   gust        NUMERIC(4, 1),
-   prcp_mean   NUMERIC(5, 1),
-   prcp        NUMERIC(5, 1),
-   sndp        NuMERIC(5, 1),
-   is_foggy    BOOLEAN,
-   is_rainy    BOOLEAN,
-   is_snowy    BOOLEAN,
-   is_hail     BOOLEAN,
-   is_thunder  BOOLEAN,
-   is_tornado  BOOLEAN,
-   temp_count  SMALLINT,
-   dewp_count  SMALLINT,
-   slp_count   SMALLINT,
-   stp_count   SMALLINT,
-   wdsp_count  SMALLINT,
-   visib_count SMALLINT,
-   temp_min_f  BOOLEAN,
-   temp_max_f  BOOLEAN,
-   prcp_flag   CHAR,
-   PRIMARY KEY (ts, station)
-) PARTITION BY RANGE (ts);
-```
 
 
 ## Parser
 
-There are two parser: [`isdd`](parser/isdd/isdd.go) and [`isdh`](parser/isdh/isdh.go), which takes noaa original yearly tarball as input, generate CSV as output (which could be directly consume by PostgreSQL Copy command). 
+There are two parsers: [`isdd`](parser/isdd/isdd.go) and [`isdh`](parser/isdh/isdh.go), which takes noaa original yearly tarball as input, generate CSV as output (which could be directly consumed by PostgreSQL `COPY` command). 
 
 ```bash
 NAME
-	isdh -- Intergrated Surface Dataset Hourly Parser
+        isd -- Intergrated Surface Dataset Parser
 
 SYNOPSIS
-	isdh [-i <input|stdin>] [-o <output|st>] -p -d -c -v
+        isd daily   [-i <input|stdin>] [-o <output|stout>] [-v]
+        isd hourly  [-i <input|stdin>] [-o <output|stout>] [-v] [-d raw|ts-first|hour-first]
 
 DESCRIPTION
-	The isdh program takes isd hourly (yearly tarball file) as input.
-	And generate csv format as output
+        The isd program takes noaa isd daily/hourly raw tarball data as input.
+        and generate parsed data in csv format as output. Works in pipe mode
+
+        cat data/daily/2023.tar.gz | bin/isd daily -v | psql ${PGURL} -AXtwqc "COPY isd.daily FROM STDIN CSV;" 
+
+        isd daily  -v -i data/daily/2023.tar.gz  | psql ${PGURL} -AXtwqc "COPY isd.daily FROM STDIN CSV;"
+        isd hourly -v -i data/hourly/2023.tar.gz | psql ${PGURL} -AXtwqc "COPY isd.hourly FROM STDIN CSV;"
 
 OPTIONS
-	-i	<input>		input file, stdin by default
-	-o	<output>	output file, stdout by default
-	-p	<profpath>	pprof file path (disable by default)	
-	-v                verbose progress report
-	-d                de-duplicate rows (raw, ts-first, hour-first)
-	-c                add comma separated extra columns
+        -i  <input>     input file, stdin by default
+        -o  <output>    output file, stdout by default
+        -p  <profpath>  pprof file path, enable if specified
+        -d              de-duplicate rows for hourly dataset (raw, ts-first, hour-first)
+        -v              verbose mode
+        -h              print help
+
 ```
 
 
 ## UI
 
-### **ISD Overview**
+**ISD Overview**
 
-Dashboard [definition](ui/isd-overview.json)
+Dashboard [definition](ui/isd/isd-overview.json)
 
-### ISD Station
+**ISD Station**
 
-Dashboard [definition](ui/isd-station.json)
+Dashboard [definition](ui/isd/isd-station.json)
 
 ![](doc/img/isd-station.jpg)
 
-### ISD Monthly
+**ISD Monthly**
 
-Dashboard [definition](ui/isd-monthly.json)
+Dashboard [definition](ui/isd/isd-monthly.json)
 
 ![](doc/img/isd-monthly.jpg)
 
