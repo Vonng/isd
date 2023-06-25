@@ -1,50 +1,19 @@
-package main
+package isdd
 
 import (
 	"archive/tar"
 	"compress/gzip"
 	"encoding/csv"
-	"flag"
 	"fmt"
 	"io"
 	"log"
 	"os"
-	"runtime/pprof"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 )
 
-// Usage will print usage and exit
-func Usage() {
-	fmt.Println(`
-NAME
-	isdd -- Intergrated Surface Dataset Daily Dataset Parser
-
-SYNOPSIS
-	isdd [-i <input|stdin>] [-o <output|st>] -p -d -c -v
-
-DESCRIPTION
-	The isdd program takes isd daily (yearly tarball file) as input.
-	And generate csv format as output
-
-OPTIONS
-	-i	<input>		input file, stdin by default
-	-o	<output>	output file, stdout by default
-	-p	<profpath>	pprof file path (disable by default)	
-	-v				verbose progress report
-	-d				de-duplicate rows (raw, ts-first, hour-first)
-	-c				add comma separated extra columns
-`)
-	os.Exit(0)
-}
-
-/*
-*********************************************************************\
-*                           Record                                     *
-\*********************************************************************
-*/
 type Record struct {
 	ID             string // 0 Station ID
 	Date           string // 1 UTC Date
@@ -511,56 +480,4 @@ func ByteCountIEC(b int) string {
 	}
 	return fmt.Sprintf("%.1f %ciB",
 		float64(b)/float64(div), "KMGTPE"[exp])
-}
-
-var (
-	inputPath    string // input path
-	outputPath   string // output path
-	profilePath  string // profile path (pprof)
-	dedupeMode   string // dedupe level: raw | ts | hour
-	extraColumns string // extra columns
-	verbose      bool   // verbose mode
-	help         bool   // help mode
-)
-
-func Main() {
-	flag.StringVar(&inputPath, "i", `stdin`, "input file path (stdin by default)")
-	flag.StringVar(&outputPath, "o", `stdout`, "output file path (stdout by default)")
-	flag.StringVar(&profilePath, "p", ``, "pprof file path (disable by default)")
-	flag.StringVar(&dedupeMode, "d", `raw`, "dedupe mode (raw|ts-first|hour-first)")
-	flag.StringVar(&extraColumns, "c", ``, "comma separated extra column names")
-	flag.BoolVar(&verbose, "v", false, "print progress report")
-	flag.BoolVar(&help, "h", false, "print help information")
-	flag.Parse()
-
-	if help {
-		Usage()
-	}
-
-	p := NewProcessor(inputPath, outputPath)
-	p.Verbose = verbose
-	p.DedupeMode = dedupeMode
-	p.ExtraColumns = strings.Split(extraColumns, ",")
-
-	// optional: performance profile
-	if profilePath != "" {
-		f, _ := os.Create(profilePath)
-		pprof.StartCPUProfile(f)
-		defer pprof.StopCPUProfile()
-	}
-
-	if err := p.Run(); err != nil {
-		panic(err)
-	}
-}
-
-func Test() {
-	p := NewProcessor(`/Volumes/Data/noaa/data/daily/2020.tar.gz`, `/tmp/record.csv`)
-	if err := p.Run(); err != nil {
-		panic(err)
-	}
-}
-
-func main() {
-	Main()
 }

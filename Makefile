@@ -115,51 +115,38 @@ refresh:
 	bin/refresh.sh $(PGURL)
 
 
-###############################################################
+#=============================================================#
 # PARSER (you can just use pre-compiled binaries)
-###############################################################
-
-# build hourly data parser
-isdd:
-	cd parser/isdd && go build
-	mv -f parser/isdd/isdd bin/isdd
-
-# build daily data parser
-isdh:
-	cd parser/isdh && go build
-	mv -f parser/isdh/isdh bin/isdh
-
-release-darwin:
-	cd parser/isdh && CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build  -a -ldflags '-extldflags "-static"' -o isdh
-	cd parser/isdd && CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build  -a -ldflags '-extldflags "-static"' -o isdd
-	mv -f parser/isdh/isdh isdh
-	mv -f parser/isdd/isdd isdd
-	upx isdh
-	upx isdd
-	tar -cf bin/release/isd_darwin-amd64.tar.gz isdh isdd
-
-release-darwin-arm:
-	cd parser/isdh && CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build  -a -ldflags '-extldflags "-static"' -o isdh
-	cd parser/isdd && CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build  -a -ldflags '-extldflags "-static"' -o isdd
-	mv -f parser/isdh/isdh isdh
-	mv -f parser/isdd/isdd isdd
-	upx isdh
-	upx isdd
-	tar -cf bin/release/isd_darwin-arm64.tar.gz isdh isdd
-
-release-linux:
-	cd parser/isdh && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build  -a -ldflags '-extldflags "-static"' -o isdh
-	cd parser/isdd && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build  -a -ldflags '-extldflags "-static"' -o isdd
-	mv -f parser/isdh/isdh isdh
-	mv -f parser/isdd/isdd isdd
-	upx isdh
-	upx isdd
-	tar -cf bin/release/isd_linux-amd64.tar.gz isdh isdd
-
+#=============================================================#
+# build parser with go, put into bin/isd
+build:
+	cd parser && CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o isd
+	mv -f parser/isd bin/isd
 clean:
-	rm -rf isdh isdd
-	rm -rf bin/isdh bin/isdd
+	rm -rf isd bin/isdd
 
-release: clean release-linux release-darwin
+release: clean release-linux release-darwin checksums clean
+release-darwin: release-darwin-amd release-darwin-arm
+release-darwin-amd:
+	cd parser && CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build  -a -ldflags '-extldflags "-static"' -o isd
+	mv parser/isd isd
+	tar -cf dist/isd-darwin-amd64.tar.gz isd
+release-darwin-arm:
+	cd parser && CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build  -a -ldflags '-extldflags "-static"' -o isd
+	mv parser/isd isd
+	tar -cf dist/isd-darwin-arm64.tar.gz isd
+
+release-linux: release-linux-amd release-linux-arm
+release-linux-amd:
+	cd parser && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build  -a -ldflags '-extldflags "-static"' -o isd
+	mv parser/isd isd
+	tar -cf dist/isd-linux-amd64.tar.gz isd
+release-linux-arm:
+	cd parser && CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build  -a -ldflags '-extldflags "-static"' -o isd
+	mv parser/isd isd
+	tar -cf dist/isd-linux-arm64.tar.gz isd
+checksums:
+	cd dist; md5sum *.tar.gz > checksums
+
 
 .PHONY: sql ui get-isd-station get-isd-history load-meta dump-meta load-daily load-hourly createdb
