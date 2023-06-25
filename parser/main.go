@@ -37,16 +37,16 @@ DESCRIPTION
 
 	cat data/daily/2023.tar.gz | bin/isd daily -v | psql ${PGURL} -AXtwqc "COPY isd.daily FROM STDIN CSV;" 
 
-    isd daily  -v -i data/daily/2023.tar.gz | psql ${PGURL} -AXtwqc "COPY isd.daily FROM STDIN CSV;"
+	isd daily  -v -i data/daily/2023.tar.gz | psql ${PGURL} -AXtwqc "COPY isd.daily FROM STDIN CSV;"
 	isd hourly -v -i data/hourly/2023.tar.gz | psql ${PGURL} -AXtwqc "COPY isd.hourly FROM STDIN CSV;"
 
 OPTIONS
-	-i	<input>		input file, stdin by default
-	-o	<output>	output file, stdout by default
-	-p	<profpath>	pprof file path, enable if specified
-	-d				de-duplicate rows for hourly dataset (raw, ts-first, hour-first)
-	-v				verbose mode
-    -h              print help
+	-i  <input>     input file, stdin by default
+	-o  <output>    output file, stdout by default
+	-p  <profpath>  pprof file path, enable if specified
+	-d              de-duplicate rows for hourly dataset (raw, ts-first, hour-first)
+	-v              verbose mode
+	-h              print help
 `)
 	os.Exit(0)
 }
