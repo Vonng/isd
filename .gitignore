@@ -10,6 +10,9 @@ isd.iml
 isd
 bin/isd
 dist/*.tar.gz
+bin/isd*.tar.gz
+
+# temp dir
 temp/
 
 # data files (can be downloaded via Internet)

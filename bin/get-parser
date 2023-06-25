@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -uo pipefail
+#==============================================================#
+# File      :   get-parser
+# Desc      :   get isd parser binary from github
+# Ctime     :   2020-11-03
+# Mtime     :   2023-06-25
+# Path      :   bin/get-parser
+# Author    :   Ruohang Feng (rh@vonng.com)
+# License   :   Apache-2.0
+#==============================================================#
+
+
+#--------------------------------------------------------------#
+# Param
+#--------------------------------------------------------------#
+VERSION=v1.0.0
+
+PROG_DIR="$(cd $(dirname $0) && pwd)"
+PROG_NAME="$(basename $0)"
+PROJ_DIR=$(dirname $PROG_DIR)
+BIN_DIR="${PROJ_DIR}/bin"
+BASEURL="https://github.com/Vonng/isd/releases/download/${VERSION}"
+
+# detect machine arch to arm64 or amd64 on linux/darwin
+UNAME=$(uname -s)   # Linux or Darwin
+ARCH=$(uname -m)    # amd64 or arm64
+if [[ ${UNAME} == "Linux" ]]; then
+    if [[ ${ARCH} == "aarch64" ]]; then
+        ARCH=arm64
+    fi
+fi
+UNAME=$(echo "${UNAME}" | tr '[:upper:]' '[:lower:]')
+PARSER_FILENAME="isd-${UNAME}-${ARCH}.tar.gz"
+PARSER_URL="${BASEURL}/${PARSER_FILENAME}"
+
+#https://github.com/Vonng/isd/releases/download/v1.0.0/isd-darwin-amd64.tar.gz
+#https://github.com/Vonng/isd/releases/download/v1.0.0/isd-darwin-arm64.tar.gz
+#https://github.com/Vonng/isd/releases/download/v1.0.0/isd-linux-amd64.tar.gz
+#https://github.com/Vonng/isd/releases/download/v1.0.0/isd-linux-arm64.tar.gz
+
+
+#--------------------------------------------------------------#
+# Utils
+#--------------------------------------------------------------#
+__CN='\033[0m';__CB='\033[0;30m';__CR='\033[0;31m';__CG='\033[0;32m';
+__CY='\033[0;33m';__CB='\033[0;34m';__CM='\033[0;35m';__CC='\033[0;36m';__CW='\033[0;37m';
+function log_info() {  printf "[${__CG} OK ${__CN}] ${__CG}$*${__CN}\n";   }
+function log_warn() {  printf "[${__CY}WARN${__CN}] ${__CY}$*${__CN}\n";   }
+function log_error() { printf "[${__CR}FAIL${__CN}] ${__CR}$*${__CN}\n";   }
+function log_debug() { printf "[${__CB}HINT${__CN}] ${__CB}$*${__CN}\n"; }
+function log_input() { printf "[${__CM} IN ${__CN}] ${__CM}$*\n=> ${__CN}"; }
+function log_hint()  { printf "${__CB}$*${__CN}"; }
+
+
+#--------------------------------------------------------------#
+# Check
+#--------------------------------------------------------------#
+DOWNLOAD_TO="${BIN_DIR}/${PARSER_FILENAME}"
+log_info "download ${PARSER_URL} to ${DOWNLOAD_TO}"
+curl -SL "${PARSER_URL}" -o "${DOWNLOAD_TO}"
+
+log_info "extract parser to bin/isd"
+cd "${BIN_DIR}" && tar -xf ${PARSER_FILENAME}
+ls -alh ${BIN_DIR}/isd

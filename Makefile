@@ -149,6 +149,9 @@ build:
 	mv -f parser/isd bin/isd
 clean:
 	rm -rf isd bin/isdd
+parser: get-parser
+get-parser:
+	bin/get-parser
 
 release: clean release-linux release-darwin checksums clean
 release-darwin: release-darwin-amd release-darwin-arm
@@ -174,4 +177,14 @@ checksums:
 	cd dist; md5sum *.tar.gz > checksums
 
 
-.PHONY: sql ui get-isd-station get-isd-history load-meta dump-meta load-daily load-hourly createdb
+.PHONY: default summary all \
+		reload reload-daily reload-hourly reload-station \
+		get-station get-daily get-hourly get-latest \
+		load-station load-daily load-hourly \
+		stable get-stable dump-stable load-stable \
+		refresh refresh-full \
+		ui dd \
+		sql drop create \
+		build clean parser get-parser \
+		release release-darwin release-darwin-amd release-darwin-arm checksums
+
