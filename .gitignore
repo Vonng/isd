@@ -6,14 +6,10 @@ isd.iml
 # macos files
 .DS_Store
 
-# parser binary (can be built from source)
-bin/isdd
-bin/isdh
-bin/isd_darwin-amd64.tar.gz
-bin/isd_linux-amd64.tar.gz
-bin/isd.tar.gz
-bin/release
-
+# parser binary: can be built from source or download via bin/get-parser
+bin/isd
+dist/*.tar.gz
+temp/
 
 # data files (can be downloaded via Internet)
 data/daily/*.csv.gz

@@ -1,0 +1,17 @@
+-- DROP EVERYTHING ABOUT ISD SCHEMA
+DROP SCHEMA IF EXISTS isd CASCADE;
+DROP TABLE IF EXISTS isd.station;
+DROP TABLE IF EXISTS isd.history;
+DROP TABLE IF EXISTS isd.mwcode;
+DROP TABLE IF EXISTS isd.element;
+DROP TABLE IF EXISTS isd.world;
+DROP TABLE IF EXISTS isd.china CASCADE;
+DROP FUNCTION IF EXISTS isd.wind16(_i numeric);
+DROP FUNCTION IF EXISTS isd.wind8(_i numeric);
+DROP FUNCTION IF EXISTS isd.mwcode_name(mw_code text);
+DROP TABLE IF EXISTS isd.daily;
+DROP TABLE IF EXISTS isd.monthly;
+DROP TABLE IF EXISTS isd.yearly;
+DROP TABLE IF EXISTS isd.hourly CASCADE;
+DROP FUNCTION IF EXISTS isd.refresh_full();
+DROP FUNCTION IF EXISTS isd.refresh(_from date, _to date);
