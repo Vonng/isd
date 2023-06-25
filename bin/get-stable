@@ -14,8 +14,7 @@ set -uo pipefail
 #--------------------------------------------------------------#
 # Param
 #--------------------------------------------------------------#
-# specify target database connection string with PGURL
-PGURL=${1-'postgres:///'}
+VERSION="v1.0.0"
 
 PROG_DIR="$(cd $(dirname $0) && pwd)"
 PROG_NAME="$(basename $0)"
@@ -46,12 +45,12 @@ function log_hint()  { printf "${__CB}$*${__CN}"; }
 # Check
 #--------------------------------------------------------------#
 DOWNLOAD_FROM="${BASEURL}/${DATAFILE_1}"
-DOWNLOAD_TO="${BIN_DIR}/${DATAFILE_1}"
+DOWNLOAD_TO="${DATA_DIR}/${DATAFILE_1}"
 log_info "download stable part1 ${DOWNLOAD_FROM} to ${DOWNLOAD_TO}"
 curl -SL "${DOWNLOAD_FROM}" -o "${DOWNLOAD_TO}"
 
 DOWNLOAD_FROM="${BASEURL}/${DATAFILE_2}"
-DOWNLOAD_TO="${BIN_DIR}/${DATAFILE_2}"
+DOWNLOAD_TO="${DATA_DIR}/${DATAFILE_2}"
 log_info "download stable part1 ${DOWNLOAD_FROM} to ${DOWNLOAD_TO}"
 curl -SL "${DOWNLOAD_FROM}" -o "${DOWNLOAD_TO}"
 
