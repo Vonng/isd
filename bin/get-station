@@ -18,13 +18,10 @@ PROG_DIR="$(cd $(dirname $0) && pwd)"
 PROG_NAME="$(basename $0)"
 PROJ_DIR=$(dirname $PROG_DIR)
 DATA_DIR="${PROJ_DIR}/data"
-STATION_URL="https://www1.ncdc.noaa.gov/pub/data/noaa/isd-history.csv"
-HISTORY_URL="https://www1.ncdc.noaa.gov/pub/data/noaa/isd-inventory.csv.z"
-STATION_DATA="${DATA_DIR}/station.csv.gz"
-HISTORY_DATA="${DATA_DIR}/history.csv.gz"
 
-# curl https://www1.ncdc.noaa.gov/pub/data/noaa/isd-history.csv -o data/station.csv
-# curl https://www1.ncdc.noaa.gov/pub/data/noaa/isd-inventory.csv.z | gzip -d > data/history.csv
+# curl https://www1.ncdc.noaa.gov/pub/data/noaa/isd-history.csv -o data/isd-history.csv
+# curl https://www1.ncdc.noaa.gov/pub/data/noaa/isd-inventory.csv.z | gzip -d > data/isd-inventory.csv.z
+
 
 #--------------------------------------------------------------#
 # Utils
@@ -38,11 +35,72 @@ function log_debug() { printf "[${__CB}HINT${__CN}] ${__CB}$*${__CN}\n"; }
 function log_input() { printf "[${__CM} IN ${__CN}] ${__CM}$*\n=> ${__CN}"; }
 function log_hint()  { printf "${__CB}$*${__CN}"; }
 
-log_info "curl ${STATION_URL} -o ${STATION_DATA}"
-curl -SL "${STATION_URL}" | gzip --best > ${STATION_DATA}
+# macos & linux compatible file size calculation
+function get_file_size() {
+  local filepath=${1-}
+  local size=0
+  # if filepath is empty or file not exists, return 0
+  if [[ -z ${filepath} ]] || [[ ! -f ${filepath} ]]; then
+    echo "0"
+    return 0
+  fi
+  if [ "$(uname)" == "Darwin" ]; then
+    size=$(stat -f '%z' ${filepath})
+  else
+    size=$(stat -c '%s' ${filepath})
+  fi
+  echo ${size}
+  return 0
+}
 
-log_info "curl ${HISTORY_URL} to ${HISTORY_DATA}"
-curl -SL "${HISTORY_URL}" | gzip -d | gzip --best > ${HISTORY_DATA}
+# download file from url, if file already exists with same size, skip download
+function download_file(){
+  local data_url=$1
+  local data_file=$2
 
-log_info "get station & history done"
-ls -alh ${DATA_DIR}/*.csv.gz
+  if [[ -f ${data_file} ]]; then
+    size=$(get_file_size ${data_file})
+    log_warn "data file exists, size: ${size} , path: ${data_file}"
+    curl_size=$(curl -sI ${data_url} | grep -i 'Content-Length' | awk '{print $2}' | tr -d '\r')
+    if [[ ${size} -eq ${curl_size} ]]; then
+      log_info "data url file has same size: ${curl_size} , skip downloading ${data_url}"
+      return 10
+    else
+      log_warn "data url file size ${curl_size} != local ${size}, downloading ${data_url}"
+      log_info "$ curl ${data_url} -o ${data_file}"
+      curl ${data_url} -o ${data_file}
+      return $?
+    fi
+  else
+    log_info "download ${data_url} to ${data_file}"
+    log_info "$ curl ${data_url} -o ${data_file}"
+    curl ${data_url} -o ${data_file}
+    return $?
+  fi
+}
+
+
+#--------------------------------------------------------------#
+# Main
+#--------------------------------------------------------------#
+# download data if any updates
+STATION_URL="https://www1.ncdc.noaa.gov/pub/data/noaa/isd-history.csv"
+HISTORY_URL="https://www1.ncdc.noaa.gov/pub/data/noaa/isd-inventory.csv.z"
+STATION_FILE="${DATA_DIR}/isd-history.csv"
+HISTORY_FILE="${DATA_DIR}/isd-inventory.csv.z"
+STATION_DATA="${DATA_DIR}/station.csv.gz"
+HISTORY_DATA="${DATA_DIR}/history.csv.gz"
+
+log_info "download isd station history and inventory data"
+download_file "${STATION_URL}" "${STATION_FILE}"
+download_file "${HISTORY_URL}" "${HISTORY_FILE}"
+
+# post process data after download (make best tarball)
+log_info "generate station.csv.gz from isd-history.csv"
+cat "${STATION_FILE}" | gzip --best > ${STATION_DATA}
+
+log_info "generate history.csv.gz from isd-inventory.csv.z"
+cat "${HISTORY_FILE}" | gzip -d | gzip --best > ${HISTORY_DATA}
+
+log_info "station data generated @ ${DATA_DIR}"
+ls -l data/*.csv.gz

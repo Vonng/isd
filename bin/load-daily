@@ -68,7 +68,7 @@ if (( year < 1900 )); then
     exit 3
 fi
 
-if ! psql ${PGURL} -AXtwqc 'SELECT 1'; then
+if ! psql ${PGURL} -AXtwqc 'SELECT 1'  >/dev/null ; then
     log_error "failed to connect to database: ${PGURL}"
     exit 4
 fi

@@ -93,7 +93,7 @@ COMMENT ON COLUMN isd.daily.temp_min_f IS '最低温度是统计得出（而非�
 COMMENT ON COLUMN isd.daily.temp_max_f IS '同上，最高温度';
 COMMENT ON COLUMN isd.daily.prcp_flag IS '降水量标记: ABCDEFGHI';
 
-CREATE INDEX IF NOT EXISTS daily_ts_idx ON isd.monthly (ts);
+CREATE INDEX IF NOT EXISTS daily_ts_idx ON isd.daily (ts);
 
 
 

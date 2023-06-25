@@ -7,6 +7,7 @@ isd.iml
 .DS_Store
 
 # parser binary: can be built from source or download via bin/get-parser
+isd
 bin/isd
 dist/*.tar.gz
 temp/
@@ -15,5 +16,12 @@ temp/
 data/daily/*.csv.gz
 data/daily/*.tar.gz
 data/hourly/*.tar.gz
-data/meta/isd_history.csv.gz
-data/meta/isd_station.csv.gz
+data/*.tar.gz
+
+
+# station metadata
+data/isd-history.csv
+data/isd-inventory.csv.z
+data/history.csv.gz
+data/station.csv.gz
+data/daily.csv.gz

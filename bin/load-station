@@ -42,7 +42,7 @@ function log_hint()  { printf "${__CB}$*${__CN}"; }
 #--------------------------------------------------------------#
 # Check
 #--------------------------------------------------------------#
-if ! psql ${PGURL} -AXtwqc 'SELECT 1'; then
+if ! psql ${PGURL} -AXtwqc 'SELECT 1'  >/dev/null ; then
     log_error "failed to connect to database: ${PGURL}"
     exit 1
 fi

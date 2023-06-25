@@ -47,7 +47,7 @@ if [[ ! -f ${DATA_FILE} ]]; then
     exit 1
 fi
 
-if ! psql ${PGURL} -AXtwqc 'SELECT 1'; then
+if ! psql ${PGURL} -AXtwqc 'SELECT 1' >/dev/null ; then
     log_error "failed to connect to database: ${PGURL}"
     exit 2
 fi

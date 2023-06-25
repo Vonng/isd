@@ -1,118 +1,143 @@
 #==============================================================#
 # File      :   Makefile
 # Ctime     :   2020-11-03
-# Mtime     :   2021-07-21
+# Mtime     :   2023-06-25
 # Desc      :   Makefile shortcuts
 # Path      :   Makefile
-# Copyright (C) 2019-2020 Ruohang Feng
+# Author    :   Ruohang Feng (rh@vonng.com)
+# License   :   Apache-2.0
 #==============================================================#
 
+PGURL?=postgres:///
+DATA_DIR=$(PWD)/data
+GRAFANA_USERNAME?=admin
+GRAFANA_PASSWORD?=admin
+GRAFANA_ENDPOINT?=http://localhost:3000
 
-###############################################################
+
+#=============================================================#
+# Summary
+#=============================================================#
+default: summary
+summary:
+	@echo "========== Database Info =========="
+	@echo "PGURL=$(PGURL)"
+	psql $(PGURL) -Xwqc '\dt+ isd.*'
+	@echo "========== Latest Record =========="
+	psql $(PGURL) -AXwtqc 'SELECT max(ts) AS "daily updated to" FROM isd.daily'
+	@echo "\n========== Local Datasets ========="
+	ls data/ data/daily data/hourly
+
+	@echo "\n========= Help Information ========"
+	@echo "make reload          # refresh latest station/daily data"
+	@echo "make get-daily       # download latest daily data"
+	@echo "make get-station     # download latest station data"
+
+
+#=============================================================#
 # Public API
-###############################################################
-reload: get-daily load-daily refresh    # reload latest (this year) daily summary data
-reload-hourly: get-hourly load-hourly   # reload latest (this year) hourly raw data
-all: baseline reload                    # create minimal viable product with latest data
-baseline: sql ui download load-meta     # setup postgres database & grafana dashboards
+#=============================================================#
+all: sql ui reload
+reload: reload-station reload-daily
+reload-daily:   get-daily   load-daily   refresh
+reload-hourly:  get-hourly  load-hourly
+reload-station: get-station load-station
 
 
-###############################################################
-# Environment
-###############################################################
-# your own environment
-PGURL?=postgres:///isd
-GRAFANA_USERNAME=admin
-GRAFANA_PASSWORD=admin
-GRAFANA_ENDPOINT=http://localhost:3000
-
-# pigsty environment
-# PGURL?=postgres://dbuser_dba:DBUser.DBA@10.10.10.10/meta
-# GRAFANA_USERNAME=admin
-# GRAFANA_PASSWORD=pigsty
-# GRAFANA_ENDPOINT=http://10.10.10.10:3000
-
-show:
-	@echo $(PGURL)
-	psql $(PGURL) -c '\dt+ isd.*'
-###############################################################
-
-
-
-###############################################################
+#=============================================================#
 # Download
-###############################################################
-
-# get basic data set (no observation data)
-download: get-meta get-parser get-station get-history
-
-# download meta data to data/meta dir
-get-meta:
-	bin/get-meta.sh
-
-# download isd daily & hourly data parser binaries from github
-get-parser:
-	bin/get-parser.sh
-
-# download meta data: isd station list
+#=============================================================#
+# get latest station/history meta data
 get-station:
-	bin/get-station.sh
+	bin/get-station
 
-# download meta data: isd station observation records
-get-history:
-	bin/get-history.sh
-
-# download current year's daily data (add year to download specific year data)
+# get latest year's daily summary data
 get-daily:
-	bin/get-daily.sh
+	bin/get-daily
 
-# download current year's hourly data (add year to download specific year data)
+# get latest year's hourly observation raw data
 get-hourly:
-	bin/get-hourly.sh
+	bin/get-hourly
+
+# usually station/this year's daily data needs to be refreshed regularly
+get-latest: get-station get-daily
 
 
-###############################################################
-# Init Database Schema
-###############################################################
-# create schema on local machine (DANGEROUS, will wipe isd schema)
-sql:
-	psql $(PGURL) -f sql/schema.sql
+#=============================================================#
+# Load Data
+#=============================================================#
+# load latest station data
+load-station:
+	bin/load-station $(PGURL)
+
+# load daily dataset of the latest year
+load-daily:
+	bin/load-daily $(PGURL)
+
+# load hourly dataset of the latest year
+load-hourly:
+	bin/load-hourly $(PGURL)
 
 
-###############################################################
-# Init Dashboards on Grafana
-###############################################################
+
+#=============================================================#
+# Stable Daily Data (Cleansed Dataset from 1900 - 2023.06)
+#=============================================================#
+# download, load, and refresh stable daily data set
+stable: get-stable load-stable refresh_full
+
+# get daily stable data set (3.4GB)
+get-stable:
+	bin/get-stable
+
+# dump stable dataset from database
+dump-stable:
+	bin/dump-stable
+
+# load entire stable daily dataset and refresh monthly/yearly partitions
+load-stable:
+	bin/load-stable $(PGURL)
+
+
+#=============================================================#
+# Monthly & Yearly Data Refresh
+#=============================================================#
+# refresh latest partition of monthly & yearly data
+refresh:
+	psql $(PGURL) -c 'SELECT isd.refresh();'
+
+# refresh entire monthly & yearly data based on daily data
+refresh-full:
+	psql $(PGURL) -c 'SELECT isd.refresh_full();'
+
+
+#=============================================================#
+# Graphic UI
+#=============================================================#
 # add dashboard to grafana according to GRAFANA_X environment
 ui:
 	cd ui && ./grafana.py load
+dd:
+	cd ui && ./grafana.py dump
 
-###############################################################
-# Meta Data (dict/const tables)
-###############################################################
 
-# dump meta data to data/meta dir
-dump-meta:
-	bin/dump-meta.sh $(PGURL)
 
-# dump meta data to data/meta dir
-load-meta:
-	bin/load-meta.sh $(PGURL)
+#=============================================================#
+# Database Schema
+#=============================================================#
+# setup database schema (dangerous)
+sql: drop create
 
-###############################################################
-# Load ISD Observation Data
-###############################################################
+# drop schema isd cascade
+drop:
+	psql $(PGURL) -f sql/0_cleanup.sql
 
-# load current year hourly data (parser required)
-load-hourly:
-	bin/load-hourly.sh $(PGURL)
-
-# load current year daily data  (parser required)
-load-daily:
-	bin/load-daily.sh $(PGURL)
-
-# refresh latest partition of monthly & yearly data
-refresh:
-	bin/refresh.sh $(PGURL)
+# create schema
+create:
+	psql $(PGURL) -f sql/1_schema.sql
+	psql $(PGURL) -f sql/2_record.sql
+	psql $(PGURL) -f sql/3_hourly.sql
+    psql $(PGURL) -f sql/4_data.sql
 
 
 #=============================================================#
