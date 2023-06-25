@@ -3,27 +3,35 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": "-- Grafana --",
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
         "type": "dashboard"
       }
     ]
   },
   "description": "ISD hourly raw observation records for single station on single month",
   "editable": true,
-  "gnetId": null,
+  "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 28,
-  "iteration": 1626881884745,
+  "id": 49,
   "links": [
     {
-      "asDropdown": false,
+      "asDropdown": true,
       "icon": "external link",
-      "includeVars": true,
-      "keepTime": true,
+      "includeVars": false,
+      "keepTime": false,
       "tags": [
         "ISD"
       ],
@@ -32,10 +40,14 @@
       "type": "dashboards"
     }
   ],
+  "liveNow": false,
   "panels": [
     {
       "collapsed": false,
-      "datasource": null,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ds-meta"
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -44,11 +56,23 @@
       },
       "id": 35,
       "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ds-meta"
+          },
+          "refId": "A"
+        }
+      ],
       "title": "Station",
       "type": "row"
     },
     {
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "fieldConfig": {
         "defaults": {
           "links": [
@@ -98,9 +122,13 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "table",
           "group": [],
           "metricColumn": "none",
@@ -129,14 +157,15 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Station",
       "transparent": true,
       "type": "stat"
     },
     {
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -174,9 +203,13 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "table",
           "group": [],
           "metricColumn": "none",
@@ -205,14 +238,15 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "USAF",
       "transparent": true,
       "type": "stat"
     },
     {
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -254,9 +288,13 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "table",
           "group": [],
           "metricColumn": "none",
@@ -285,14 +323,15 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "WBAN",
       "transparent": true,
       "type": "stat"
     },
     {
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -331,9 +370,13 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "table",
           "group": [],
           "metricColumn": "none",
@@ -362,14 +405,15 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Location",
       "transparent": true,
       "type": "stat"
     },
     {
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -408,9 +452,13 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "table",
           "group": [],
           "metricColumn": "none",
@@ -439,14 +487,15 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Elevation",
       "transparent": true,
       "type": "stat"
     },
     {
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -484,9 +533,13 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "table",
           "group": [],
           "metricColumn": "none",
@@ -515,14 +568,15 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Country Code",
       "transparent": true,
       "type": "stat"
     },
     {
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -561,14 +615,19 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
+          "editorMode": "code",
           "format": "table",
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT name FROM isd.world_fences WHERE ST_Contains(fence60m, '$location'::GEOMETRY(Point)) ;",
+          "rawSql": "SELECT name FROM isd.world WHERE ST_Contains(fence, '$location'::GEOMETRY(Point)) ;",
           "refId": "A",
           "select": [
             [
@@ -580,6 +639,23 @@
               }
             ]
           ],
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
           "table": "china_railway",
           "timeColumn": "crawled_time",
           "timeColumnType": "timestamp",
@@ -592,14 +668,15 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Country",
       "transparent": true,
       "type": "stat"
     },
     {
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -637,9 +714,13 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "table",
           "group": [],
           "metricColumn": "none",
@@ -668,14 +749,15 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Station Name",
       "transparent": true,
       "type": "stat"
     },
     {
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -714,9 +796,13 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "table",
           "group": [],
           "metricColumn": "none",
@@ -745,14 +831,15 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Period",
       "transparent": true,
       "type": "stat"
     },
     {
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -790,9 +877,13 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "table",
           "group": [],
           "metricColumn": "none",
@@ -821,14 +912,15 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "ICAO",
       "transparent": true,
       "type": "stat"
     },
     {
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -866,14 +958,19 @@
         "text": {},
         "textMode": "value"
       },
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
+          "editorMode": "code",
           "format": "table",
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT province, city, name FROM isd.china_fences c WHERE ST_Contains(c.fence, '$location'::GEOMETRY);",
+          "rawSql": "SELECT province, city, name FROM isd.china c WHERE ST_Contains(c.fence, '$location'::GEOMETRY);",
           "refId": "A",
           "select": [
             [
@@ -885,6 +982,23 @@
               }
             ]
           ],
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
           "table": "china_railway",
           "timeColumn": "crawled_time",
           "timeColumnType": "timestamp",
@@ -897,15 +1011,16 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Administration District",
       "transparent": true,
       "type": "stat"
     },
     {
       "collapsed": false,
-      "datasource": null,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ds-meta"
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -914,11 +1029,23 @@
       },
       "id": 64,
       "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ds-meta"
+          },
+          "refId": "A"
+        }
+      ],
       "title": "Report",
       "type": "row"
     },
     {
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "gridPos": {
         "h": 7,
         "w": 24,
@@ -933,6 +1060,10 @@
       "pluginVersion": "7.1.3",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "table",
           "group": [],
           "metricColumn": "none",
@@ -961,14 +1092,15 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "transparent": true,
       "type": "vonng-echarts-panel"
     },
     {
       "collapsed": true,
-      "datasource": null,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ds-meta"
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -978,7 +1110,10 @@
       "id": 58,
       "panels": [
         {
-          "datasource": "Meta",
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "fieldConfig": {
             "defaults": {
               "custom": {
@@ -989,8 +1124,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               }
@@ -1120,6 +1254,10 @@
           "pluginVersion": "7.1.3",
           "targets": [
             {
+              "datasource": {
+                "type": "postgres",
+                "uid": "ds-meta"
+              },
               "format": "table",
               "group": [],
               "metricColumn": "none",
@@ -1148,8 +1286,6 @@
               ]
             }
           ],
-          "timeFrom": null,
-          "timeShift": null,
           "title": "附近的观测站",
           "transformations": [
             {
@@ -1174,7 +1310,10 @@
           "type": "table"
         },
         {
-          "datasource": "Meta",
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "fieldConfig": {
             "defaults": {
               "custom": {}
@@ -1195,6 +1334,10 @@
           "pluginVersion": "7.1.3",
           "targets": [
             {
+              "datasource": {
+                "type": "postgres",
+                "uid": "ds-meta"
+              },
               "format": "table",
               "group": [],
               "metricColumn": "none",
@@ -1228,12 +1371,24 @@
           "type": "vonng-echarts-panel"
         }
       ],
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ds-meta"
+          },
+          "refId": "A"
+        }
+      ],
       "title": "Location",
       "type": "row"
     },
     {
       "collapsed": false,
-      "datasource": null,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ds-meta"
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1242,11 +1397,23 @@
       },
       "id": 62,
       "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ds-meta"
+          },
+          "refId": "A"
+        }
+      ],
       "title": "Statistics",
       "type": "row"
     },
     {
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -2775,9 +2942,13 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "table",
           "group": [],
           "metricColumn": "none",
@@ -2806,8 +2977,6 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Monthly Summary",
       "transformations": [
         {
@@ -2894,13 +3063,19 @@
       "type": "stat"
     },
     {
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
             "align": "center",
-            "displayMode": "auto",
-            "filterable": false
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false,
+            "inspect": false
           },
           "mappings": [],
           "thresholds": {
@@ -2993,8 +3168,10 @@
                 "value": 1
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               }
             ]
           },
@@ -3065,8 +3242,10 @@
                 "value": 1
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               }
             ]
           },
@@ -3137,8 +3316,10 @@
                 "value": 1
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               }
             ]
           },
@@ -3209,8 +3390,10 @@
                 "value": 1
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               }
             ]
           },
@@ -3229,8 +3412,10 @@
                 "value": 100
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               },
               {
                 "id": "thresholds",
@@ -3281,8 +3466,10 @@
                 "value": 100
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               },
               {
                 "id": "thresholds",
@@ -3329,8 +3516,10 @@
                 "value": "velocityms"
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               },
               {
                 "id": "thresholds",
@@ -3413,8 +3602,10 @@
                 "value": "velocityms"
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               },
               {
                 "id": "thresholds",
@@ -3497,8 +3688,10 @@
                 "value": "velocityms"
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               },
               {
                 "id": "thresholds",
@@ -3581,8 +3774,10 @@
                 "value": "percent"
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               },
               {
                 "id": "thresholds",
@@ -3629,8 +3824,10 @@
                 "value": "lengthmm"
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               },
               {
                 "id": "thresholds",
@@ -3677,8 +3874,10 @@
                 "value": "lengthmm"
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               },
               {
                 "id": "thresholds",
@@ -3757,8 +3956,10 @@
                 }
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               }
             ]
           }
@@ -3772,12 +3973,25 @@
       },
       "id": 60,
       "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "table",
           "group": [],
           "metricColumn": "none",
@@ -3806,8 +4020,6 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Daily Summary",
       "transformations": [
         {
@@ -3862,7 +4074,10 @@
     },
     {
       "collapsed": false,
-      "datasource": null,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ds-meta"
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -3871,6 +4086,15 @@
       },
       "id": 72,
       "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ds-meta"
+          },
+          "refId": "A"
+        }
+      ],
       "title": "Raw Observation",
       "type": "row"
     },
@@ -3879,7 +4103,10 @@
       "bars": true,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "decimals": 0,
       "fill": 1,
       "fillGradient": 0,
@@ -3907,7 +4134,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -3917,6 +4144,10 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
@@ -3946,9 +4177,7 @@
         }
       ],
       "thresholds": [],
-      "timeFrom": null,
       "timeRegions": [],
-      "timeShift": null,
       "title": "Observation per Day",
       "tooltip": {
         "shared": true,
@@ -3958,9 +4187,7 @@
       "transparent": true,
       "type": "graph",
       "xaxis": {
-        "buckets": null,
         "mode": "time",
-        "name": null,
         "show": true,
         "values": []
       },
@@ -3969,43 +4196,41 @@
           "$$hashKey": "object:64",
           "decimals": 0,
           "format": "short",
-          "label": null,
           "logBase": 1,
-          "max": null,
-          "min": null,
           "show": true
         },
         {
           "$$hashKey": "object:65",
           "format": "short",
-          "label": null,
           "logBase": 1,
-          "max": null,
-          "min": null,
           "show": false
         }
       ],
       "yaxis": {
-        "align": false,
-        "alignLevel": null
+        "align": false
       }
     },
     {
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
             "align": "center",
-            "displayMode": "auto",
-            "filterable": false
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false,
+            "inspect": false
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           }
@@ -4031,8 +4256,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "blue",
-                      "value": null
+                      "color": "blue"
                     },
                     {
                       "color": "purple",
@@ -4078,8 +4302,10 @@
                 "value": 1
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               }
             ]
           },
@@ -4103,8 +4329,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "blue",
-                      "value": null
+                      "color": "blue"
                     },
                     {
                       "color": "purple",
@@ -4150,8 +4375,10 @@
                 "value": 1
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               }
             ]
           },
@@ -4170,8 +4397,10 @@
                 "value": 94
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               },
               {
                 "id": "thresholds",
@@ -4179,8 +4408,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "blue",
-                      "value": null
+                      "color": "blue"
                     },
                     {
                       "color": "blue",
@@ -4222,8 +4450,10 @@
                 "value": 79
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               },
               {
                 "id": "thresholds",
@@ -4231,8 +4461,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "blue",
-                      "value": null
+                      "color": "blue"
                     },
                     {
                       "color": "blue",
@@ -4270,8 +4499,10 @@
                 "value": 60
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               },
               {
                 "id": "unit",
@@ -4290,8 +4521,10 @@
                 "value": "velocityms"
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               },
               {
                 "id": "thresholds",
@@ -4299,8 +4532,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "super-light-green",
@@ -4374,8 +4606,10 @@
                 "value": "velocityms"
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               },
               {
                 "id": "thresholds",
@@ -4383,8 +4617,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "super-light-green",
@@ -4466,8 +4699,10 @@
                 "value": 0
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               },
               {
                 "id": "thresholds",
@@ -4475,8 +4710,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "orange",
-                      "value": null
+                      "color": "orange"
                     },
                     {
                       "color": "yellow",
@@ -4530,8 +4764,10 @@
                 "value": "lengthmm"
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               },
               {
                 "id": "thresholds",
@@ -4539,8 +4775,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "super-light-green",
-                      "value": null
+                      "color": "super-light-green"
                     },
                     {
                       "color": "green",
@@ -4578,8 +4813,10 @@
                 "value": "lengthmm"
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               },
               {
                 "id": "thresholds",
@@ -4587,8 +4824,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "super-light-green",
-                      "value": null
+                      "color": "super-light-green"
                     },
                     {
                       "color": "green",
@@ -4711,8 +4947,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "super-light-green",
@@ -4738,8 +4973,10 @@
                 }
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               }
             ]
           },
@@ -4762,8 +4999,10 @@
             },
             "properties": [
               {
-                "id": "custom.displayMode",
-                "value": "json-view"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "json-view"
+                }
               }
             ]
           },
@@ -4791,8 +5030,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "red",
-                      "value": null
+                      "color": "red"
                     },
                     {
                       "color": "orange",
@@ -4810,8 +5048,10 @@
                 }
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-text"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               }
             ]
           },
@@ -4836,8 +5076,10 @@
                 ]
               },
               {
-                "id": "custom.displayMode",
-                "value": "auto"
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto"
+                }
               },
               {
                 "id": "custom.width",
@@ -4891,6 +5133,15 @@
       },
       "id": 77,
       "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
         "showHeader": true,
         "sortBy": [
           {
@@ -4899,9 +5150,13 @@
           }
         ]
       },
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "table",
           "group": [],
           "metricColumn": "none",
@@ -4930,8 +5185,6 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Raw Data (hourly)",
       "transformations": [
         {
@@ -5009,7 +5262,10 @@
     },
     {
       "collapsed": false,
-      "datasource": null,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ds-meta"
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -5018,6 +5274,15 @@
       },
       "id": 90,
       "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ds-meta"
+          },
+          "refId": "A"
+        }
+      ],
       "title": "气象要素可视化",
       "type": "row"
     },
@@ -5033,7 +5298,10 @@
       "bars": true,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "decimals": 0,
       "fill": 0,
       "fillGradient": 0,
@@ -5062,7 +5330,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -5072,6 +5340,10 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
@@ -5101,9 +5373,7 @@
         }
       ],
       "thresholds": [],
-      "timeFrom": null,
       "timeRegions": [],
-      "timeShift": null,
       "title": "Weather",
       "tooltip": {
         "shared": true,
@@ -5119,9 +5389,7 @@
       "transparent": true,
       "type": "graph",
       "xaxis": {
-        "buckets": null,
         "mode": "time",
-        "name": null,
         "show": true,
         "values": []
       },
@@ -5133,14 +5401,12 @@
           "label": "",
           "logBase": 1,
           "max": "1",
-          "min": null,
           "show": true
         },
         {
           "$$hashKey": "object:171",
           "decimals": 0,
           "format": "none",
-          "label": null,
           "logBase": 1,
           "max": "100",
           "min": "0",
@@ -5148,8 +5414,7 @@
         }
       ],
       "yaxis": {
-        "align": false,
-        "alignLevel": null
+        "align": false
       }
     },
     {
@@ -5162,7 +5427,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "decimals": 1,
       "fill": 0,
       "fillGradient": 0,
@@ -5191,7 +5459,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -5225,6 +5493,10 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
@@ -5253,6 +5525,10 @@
           ]
         },
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
@@ -5290,9 +5566,7 @@
           "yaxis": "left"
         }
       ],
-      "timeFrom": null,
       "timeRegions": [],
-      "timeShift": null,
       "title": "Temperature (hourly raw data)",
       "tooltip": {
         "shared": true,
@@ -5302,9 +5576,7 @@
       "transparent": true,
       "type": "graph",
       "xaxis": {
-        "buckets": null,
         "mode": "time",
-        "name": null,
         "show": true,
         "values": []
       },
@@ -5313,17 +5585,13 @@
           "$$hashKey": "object:124",
           "decimals": 1,
           "format": "celsius",
-          "label": null,
           "logBase": 1,
-          "max": null,
-          "min": null,
           "show": true
         },
         {
           "$$hashKey": "object:125",
           "decimals": 0,
           "format": "none",
-          "label": null,
           "logBase": 1,
           "max": "100",
           "min": "0",
@@ -5331,8 +5599,7 @@
         }
       ],
       "yaxis": {
-        "align": false,
-        "alignLevel": null
+        "align": false
       }
     },
     {
@@ -5340,7 +5607,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "decimals": 1,
       "fill": 0,
       "fillGradient": 0,
@@ -5369,7 +5639,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -5390,6 +5660,10 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
@@ -5429,9 +5703,7 @@
           "yaxis": "left"
         }
       ],
-      "timeFrom": null,
       "timeRegions": [],
-      "timeShift": null,
       "title": "Dew Point (hourly raw data)",
       "tooltip": {
         "shared": true,
@@ -5441,9 +5713,7 @@
       "transparent": true,
       "type": "graph",
       "xaxis": {
-        "buckets": null,
         "mode": "time",
-        "name": null,
         "show": true,
         "values": []
       },
@@ -5452,17 +5722,13 @@
           "$$hashKey": "object:256",
           "decimals": 1,
           "format": "celsius",
-          "label": null,
           "logBase": 1,
-          "max": null,
-          "min": null,
           "show": true
         },
         {
           "$$hashKey": "object:257",
           "decimals": 0,
           "format": "none",
-          "label": null,
           "logBase": 1,
           "max": "100",
           "min": "0",
@@ -5470,8 +5736,7 @@
         }
       ],
       "yaxis": {
-        "align": false,
-        "alignLevel": null
+        "align": false
       }
     },
     {
@@ -5479,7 +5744,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "decimals": 1,
       "fill": 0,
       "fillGradient": 0,
@@ -5508,7 +5776,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -5536,6 +5804,10 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
@@ -5564,6 +5836,10 @@
           ]
         },
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
@@ -5591,9 +5867,7 @@
         }
       ],
       "thresholds": [],
-      "timeFrom": null,
       "timeRegions": [],
-      "timeShift": null,
       "title": "Sea Level Pressure (hourly raw data)",
       "tooltip": {
         "shared": true,
@@ -5603,9 +5877,7 @@
       "transparent": true,
       "type": "graph",
       "xaxis": {
-        "buckets": null,
         "mode": "time",
-        "name": null,
         "show": true,
         "values": []
       },
@@ -5614,17 +5886,13 @@
           "$$hashKey": "object:654",
           "decimals": 1,
           "format": "pressurehpa",
-          "label": null,
           "logBase": 1,
-          "max": null,
-          "min": null,
           "show": true
         },
         {
           "$$hashKey": "object:655",
           "decimals": 0,
           "format": "none",
-          "label": null,
           "logBase": 1,
           "max": "100",
           "min": "0",
@@ -5632,8 +5900,7 @@
         }
       ],
       "yaxis": {
-        "align": false,
-        "alignLevel": null
+        "align": false
       }
     },
     {
@@ -5644,7 +5911,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "decimals": 1,
       "fill": 0,
       "fillGradient": 0,
@@ -5673,7 +5943,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -5701,6 +5971,10 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
@@ -5729,6 +6003,10 @@
           ]
         },
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
@@ -5756,9 +6034,7 @@
         }
       ],
       "thresholds": [],
-      "timeFrom": null,
       "timeRegions": [],
-      "timeShift": null,
       "title": "Wind Speed (hourly raw data)",
       "tooltip": {
         "shared": true,
@@ -5768,9 +6044,7 @@
       "transparent": true,
       "type": "graph",
       "xaxis": {
-        "buckets": null,
         "mode": "time",
-        "name": null,
         "show": true,
         "values": []
       },
@@ -5779,26 +6053,19 @@
           "$$hashKey": "object:783",
           "decimals": 1,
           "format": "velocityms",
-          "label": null,
           "logBase": 1,
-          "max": null,
-          "min": null,
           "show": true
         },
         {
           "$$hashKey": "object:784",
           "decimals": 0,
           "format": "none",
-          "label": null,
           "logBase": 1,
-          "max": null,
-          "min": null,
           "show": false
         }
       ],
       "yaxis": {
-        "align": false,
-        "alignLevel": null
+        "align": false
       }
     },
     {
@@ -5808,7 +6075,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -5835,7 +6105,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "pointradius": 10,
       "points": true,
       "renderer": "flot",
@@ -5845,6 +6115,10 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
@@ -5872,9 +6146,7 @@
         }
       ],
       "thresholds": [],
-      "timeFrom": null,
       "timeRegions": [],
-      "timeShift": null,
       "title": "Wind Direction",
       "tooltip": {
         "shared": true,
@@ -5884,9 +6156,7 @@
       "transparent": true,
       "type": "graph",
       "xaxis": {
-        "buckets": null,
         "mode": "time",
-        "name": null,
         "show": true,
         "values": []
       },
@@ -5894,7 +6164,6 @@
         {
           "$$hashKey": "object:874",
           "format": "short",
-          "label": null,
           "logBase": 1,
           "max": "360",
           "min": "0",
@@ -5903,7 +6172,6 @@
         {
           "$$hashKey": "object:875",
           "format": "short",
-          "label": null,
           "logBase": 1,
           "max": "360",
           "min": "0",
@@ -5911,8 +6179,7 @@
         }
       ],
       "yaxis": {
-        "align": false,
-        "alignLevel": null
+        "align": false
       }
     },
     {
@@ -5924,7 +6191,10 @@
       "bars": true,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "decimals": 1,
       "fill": 0,
       "fillGradient": 0,
@@ -5953,7 +6223,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -5963,6 +6233,10 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
@@ -5990,9 +6264,7 @@
         }
       ],
       "thresholds": [],
-      "timeFrom": null,
       "timeRegions": [],
-      "timeShift": null,
       "title": "Cloud（Oktas）",
       "tooltip": {
         "shared": true,
@@ -6002,9 +6274,7 @@
       "transparent": true,
       "type": "graph",
       "xaxis": {
-        "buckets": null,
         "mode": "time",
-        "name": null,
         "show": true,
         "values": []
       },
@@ -6023,16 +6293,12 @@
           "$$hashKey": "object:969",
           "decimals": 0,
           "format": "h",
-          "label": null,
           "logBase": 1,
-          "max": null,
-          "min": null,
           "show": false
         }
       ],
       "yaxis": {
-        "align": false,
-        "alignLevel": null
+        "align": false
       }
     },
     {
@@ -6045,7 +6311,10 @@
       "bars": true,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "decimals": 1,
       "fill": 0,
       "fillGradient": 0,
@@ -6074,7 +6343,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -6084,6 +6353,10 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
@@ -6111,9 +6384,7 @@
         }
       ],
       "thresholds": [],
-      "timeFrom": null,
       "timeRegions": [],
-      "timeShift": null,
       "title": "Visibility",
       "tooltip": {
         "shared": true,
@@ -6123,9 +6394,7 @@
       "transparent": true,
       "type": "graph",
       "xaxis": {
-        "buckets": null,
         "mode": "time",
-        "name": null,
         "show": true,
         "values": []
       },
@@ -6136,7 +6405,6 @@
           "format": "lengthm",
           "label": "",
           "logBase": 1,
-          "max": null,
           "min": "0",
           "show": true
         },
@@ -6144,16 +6412,12 @@
           "$$hashKey": "object:1055",
           "decimals": 0,
           "format": "h",
-          "label": null,
           "logBase": 1,
-          "max": null,
-          "min": null,
           "show": false
         }
       ],
       "yaxis": {
-        "align": false,
-        "alignLevel": null
+        "align": false
       }
     },
     {
@@ -6164,7 +6428,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "decimals": 1,
       "fill": 0,
       "fillGradient": 0,
@@ -6193,7 +6460,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -6220,6 +6487,10 @@
       "steppedLine": true,
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
@@ -6248,6 +6519,10 @@
           ]
         },
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
@@ -6275,9 +6550,7 @@
         }
       ],
       "thresholds": [],
-      "timeFrom": null,
       "timeRegions": [],
-      "timeShift": null,
       "title": "Precipitation",
       "tooltip": {
         "shared": true,
@@ -6287,9 +6560,7 @@
       "transparent": true,
       "type": "graph",
       "xaxis": {
-        "buckets": null,
         "mode": "time",
-        "name": null,
         "show": true,
         "values": []
       },
@@ -6300,24 +6571,18 @@
           "format": "lengthmm",
           "label": "",
           "logBase": 1,
-          "max": null,
-          "min": null,
           "show": true
         },
         {
           "$$hashKey": "object:392",
           "decimals": 0,
           "format": "h",
-          "label": null,
           "logBase": 1,
-          "max": null,
-          "min": null,
           "show": true
         }
       ],
       "yaxis": {
-        "align": false,
-        "alignLevel": null
+        "align": false
       }
     },
     {
@@ -6327,7 +6592,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "decimals": 1,
       "fill": 0,
       "fillGradient": 0,
@@ -6356,7 +6624,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -6379,6 +6647,10 @@
       "steppedLine": true,
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "time_series",
           "group": [],
           "hide": false,
@@ -6408,6 +6680,10 @@
           ]
         },
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
           "format": "time_series",
           "group": [],
           "hide": false,
@@ -6436,9 +6712,7 @@
         }
       ],
       "thresholds": [],
-      "timeFrom": null,
       "timeRegions": [],
-      "timeShift": null,
       "title": "Snow Depth",
       "tooltip": {
         "shared": true,
@@ -6448,9 +6722,7 @@
       "transparent": true,
       "type": "graph",
       "xaxis": {
-        "buckets": null,
         "mode": "time",
-        "name": null,
         "show": true,
         "values": []
       },
@@ -6461,29 +6733,23 @@
           "format": "lengthmm",
           "label": "",
           "logBase": 1,
-          "max": null,
-          "min": null,
           "show": true
         },
         {
           "$$hashKey": "object:1283",
           "decimals": 0,
           "format": "h",
-          "label": null,
           "logBase": 1,
-          "max": null,
-          "min": null,
           "show": true
         }
       ],
       "yaxis": {
-        "align": false,
-        "alignLevel": null
+        "align": false
       }
     }
   ],
-  "refresh": false,
-  "schemaVersion": 30,
+  "refresh": "",
+  "schemaVersion": 38,
   "style": "dark",
   "tags": [
     "ISD"
@@ -6491,16 +6757,16 @@
   "templating": {
     "list": [
       {
-        "allValue": null,
         "current": {
           "selected": false,
-          "text": "54342099999",
-          "value": "54342099999"
+          "text": "01001099999",
+          "value": "01001099999"
         },
-        "datasource": "Meta",
+        "datasource": {
+          "type": "postgres",
+          "uid": "ds-meta"
+        },
         "definition": "SELECT station FROM isd.station  WHERE period && daterange($__timeFrom()::DATE, $__timeTo()::DATE, '[]');",
-        "description": null,
-        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "Station",
@@ -6518,16 +6784,16 @@
         "useTags": false
       },
       {
-        "allValue": null,
         "current": {
           "selected": false,
-          "text": "0101000020E61000000C022B8716E15E40E7FBA9F1D2DD4440",
-          "value": "0101000020E61000000C022B8716E15E40E7FBA9F1D2DD4440"
+          "text": "0101000020E61000002FDD2406815521C0C1CAA145B6BB5140",
+          "value": "0101000020E61000002FDD2406815521C0C1CAA145B6BB5140"
         },
-        "datasource": "Meta",
+        "datasource": {
+          "type": "postgres",
+          "uid": "ds-meta"
+        },
         "definition": "SELECT location FROM isd.station WHERE station = '$station';",
-        "description": null,
-        "error": null,
         "hide": 2,
         "includeAll": false,
         "label": "Location",
@@ -6545,16 +6811,16 @@
         "useTags": false
       },
       {
-        "allValue": null,
         "current": {
           "selected": false,
-          "text": "123.517",
-          "value": "123.517"
+          "text": "-8.667",
+          "value": "-8.667"
         },
-        "datasource": "Meta",
+        "datasource": {
+          "type": "postgres",
+          "uid": "ds-meta"
+        },
         "definition": "SELECT longitude FROM isd.station WHERE station = '$station';",
-        "description": null,
-        "error": null,
         "hide": 2,
         "includeAll": false,
         "label": "Longitude",
@@ -6572,16 +6838,16 @@
         "useTags": false
       },
       {
-        "allValue": null,
         "current": {
           "selected": false,
-          "text": "41.733",
-          "value": "41.733"
+          "text": "70.933",
+          "value": "70.933"
         },
-        "datasource": "Meta",
+        "datasource": {
+          "type": "postgres",
+          "uid": "ds-meta"
+        },
         "definition": "SELECT latitude FROM isd.station WHERE station = '$station';",
-        "description": null,
-        "error": null,
         "hide": 2,
         "includeAll": false,
         "label": "Latitude",
@@ -6599,16 +6865,16 @@
         "useTags": false
       },
       {
-        "allValue": null,
         "current": {
           "selected": false,
-          "text": "2020-02",
-          "value": "2020-02"
+          "text": "2023-06",
+          "value": "2023-06"
         },
-        "datasource": "Meta",
+        "datasource": {
+          "type": "postgres",
+          "uid": "ds-meta"
+        },
         "definition": "SELECT substr(generate_series(begin_date, end_date, '1month'::INTERVAL)::DATE::TEXT, 1, 7) from isd.station WHERE station = '$station' ORDER BY 1 DESC;",
-        "description": null,
-        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "月份",
@@ -6653,5 +6919,6 @@
   "timezone": "",
   "title": "ISD Monthly",
   "uid": "isd-monthly",
-  "version": 9
+  "version": 6,
+  "weekStart": ""
 }

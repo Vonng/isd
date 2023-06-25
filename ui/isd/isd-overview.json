@@ -3,36 +3,51 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": "-- Grafana --",
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
         "type": "dashboard"
       }
     ]
   },
   "description": "ISD Overview",
   "editable": true,
-  "gnetId": null,
+  "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": null,
+  "id": 48,
   "links": [
     {
+      "asDropdown": true,
       "icon": "external link",
-      "includeVars": true,
+      "includeVars": false,
       "keepTime": false,
       "tags": [
         "ISD"
       ],
       "targetBlank": false,
+      "title": "ISD",
       "type": "dashboards"
     }
   ],
+  "liveNow": false,
   "panels": [
     {
       "collapsed": false,
-      "datasource": null,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ds-prometheus"
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -41,11 +56,23 @@
       },
       "id": 8,
       "panels": [],
-      "title": "Overview",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ds-prometheus"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Stations / 气象站点",
       "type": "row"
     },
     {
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -66,8 +93,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 3,
-        "w": 24,
+        "h": 4,
+        "w": 9,
         "x": 0,
         "y": 1
       },
@@ -84,19 +111,22 @@
           "fields": "",
           "values": false
         },
-        "text": {
-          "titleSize": 14
-        },
+        "text": {},
         "textMode": "value_and_name"
       },
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
+          "editorMode": "code",
           "format": "table",
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT count(*) AS \"Station\" FROM isd.station;",
+          "rawSql": "SELECT count(*) AS \"Station Count\" FROM isd.station;",
           "refId": "A",
           "select": [
             [
@@ -108,6 +138,23 @@
               }
             ]
           ],
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
           "timeColumn": "time",
           "where": [
             {
@@ -118,9 +165,14 @@
           ]
         },
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
+          "editorMode": "code",
           "format": "table",
           "group": [],
-          "hide": false,
+          "hide": true,
           "metricColumn": "none",
           "rawQuery": true,
           "rawSql": "SELECT count(*) AS \"Station (Selected)\"\nFROM isd.station WHERE period && daterange($__timeFrom()::DATE, $__timeTo()::DATE, '[]');",
@@ -135,6 +187,23 @@
               }
             ]
           ],
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
           "timeColumn": "time",
           "where": [
             {
@@ -145,12 +214,17 @@
           ]
         },
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
+          "editorMode": "code",
           "format": "table",
           "group": [],
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": " SELECT sum(total) AS \"Observation\"\n FROM isd.history;",
+          "rawSql": "select reltuples AS \"Daily Records\" from pg_class where oid = 'isd.daily'::RegClass;",
           "refId": "C",
           "select": [
             [
@@ -162,6 +236,23 @@
               }
             ]
           ],
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
           "timeColumn": "time",
           "where": [
             {
@@ -172,12 +263,17 @@
           ]
         },
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
+          "editorMode": "code",
           "format": "table",
           "group": [],
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": " SELECT sum(total) AS \"Observation(Selected)\"\n FROM isd.history WHERE $__timeFilter(year)",
+          "rawSql": "select reltuples AS \"Monthly Records\" from pg_class where oid = 'isd.monthly'::RegClass;",
           "refId": "D",
           "select": [
             [
@@ -189,6 +285,23 @@
               }
             ]
           ],
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
           "timeColumn": "time",
           "where": [
             {
@@ -199,12 +312,17 @@
           ]
         },
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
+          "editorMode": "code",
           "format": "table",
           "group": [],
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": " SELECT sum(reltuples) AS \"Daily Summary (in db)\"\n FROM pg_class WHERE relname LIKE 'daily_%';",
+          "rawSql": "select reltuples AS \"Annual Records\" from pg_class where oid = 'isd.yearly'::RegClass;",
           "refId": "E",
           "select": [
             [
@@ -216,33 +334,23 @@
               }
             ]
           ],
-          "timeColumn": "time",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        },
-        {
-          "format": "table",
-          "group": [],
-          "hide": false,
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": " SELECT sum(reltuples) AS \"Hourly RawData  (in db)\"\n FROM pg_class WHERE relname LIKE 'hourly_%';",
-          "refId": "F",
-          "select": [
-            [
+          "sql": {
+            "columns": [
               {
-                "params": [
-                  "value"
-                ],
-                "type": "column"
+                "parameters": [],
+                "type": "function"
               }
-            ]
-          ],
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
           "timeColumn": "time",
           "where": [
             {
@@ -257,7 +365,64 @@
       "type": "stat"
     },
     {
-      "datasource": "Meta",
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
+      "gridPos": {
+        "h": 20,
+        "w": 15,
+        "x": 9,
+        "y": 1
+      },
+      "id": 19,
+      "options": {
+        "followTheme": false,
+        "getOption": "// data: extract and transform grafana data\nfunction parse_grafana_data(d) {\n    var rawData = []\n    if (data.series[0].fields[0].values.buffer === undefined) {\n        rawData = d.series[0].fields.map((e) => {\n            return e.values\n        })\n    } else { // large dataset will have their data inside a buffer\n        rawData = d.series[0].fields.map((e) => {\n            return e.values.buffer\n        })\n    }\n    var nDim = rawData.length\n    var nItem = rawData[0].length\n    var result = []\n    for (var i = 0; i < nItem; i++) {    // item\n        result[i] = []\n        for (var j = 0; j < nDim; j++) {  // dimension\n            result[i][j] = rawData[j][i]\n        }\n    }\n    return result\n}\n\nvar mapData = parse_grafana_data(data)\n\n\n// event: resize after window resize\nwindow.onresize = function () {\n    echartsInstance.resize()\n}\n\n// event: reset symbol size on geo zoom\nechartsInstance.on(\"georoam\", function (params) {\n    var zoomLevel = echartsInstance.getOption().geo[0].zoom\n    var symbolSize = 3 * Math.sqrt(zoomLevel)\n    echartsInstance.setOption({\n        series: [{symbolSize: symbolSize}]\n    })\n});\n\n// event: jump to station main page when click symbol\nechartsInstance.on(\"click\", {seriesName: 'station'}, function (params) {\n    window.location = '/d/isd-station?var-station=' + params.data[4]\n})\n\n// final option\nvar option = {\n    title: {\n        text: 'World Integrated Surface Stations',\n        subtext: 'Click station mark for detail info',\n        top: '2%',\n        right: '2%'\n    },\n    geo: {\n        map: 'world',\n        show: true,\n        center: [0, 20],\n        zoom: 1.6,\n        roam: true\n    },\n    visualMap: {\n        show: false,\n        left: 'right',\n        min: 0,\n        max: 2,\n        inRange: {\n            color: ['#A0A4AA', '#8AB8FF', '#73BF7B']\n        },\n        text: ['Active', 'Silent'],\n        calculable: true\n    },\n    series: [\n        {\n            type: 'scatter',\n            name: 'station',\n            coordinateSystem: 'geo',\n            symbol: 'circle',\n            symbolSize: 5,\n            data: mapData,\n            label: {\n                fontFamily: 'sans-serif',\n                formatter: function (param) {\n                    var pasca = param.value[6]\n                    if (pasca != null) {\n                        pasca = Math.round(pasca / 10)\n                    } else {\n                        pasca = 'N/A '\n                    }\n                    return \"\"\n                        + '{a|' + param.value[3] + '}\\n'            // station name\n                        + '{b|Station : ' + param.value[4] + '}\\n'  // station id\n                        + '{b|Location: (' + param.value[0] + ', ' + param.value[1] + ', ' + param.value[2] + ')}\\n' // location\n                        + '{b|Country : ' + param.value[6] + '}\\n'  // Country\n                        + '{b|LastSeen: ' + param.value[5] + '}\\n'  // Last Update Time\n                },\n                rich: {\n                    a: {\n                        color: 'blue',\n                        fontSize: 14,\n                        fontWeight: 'bold',\n                        lineHeight: 22\n                    },\n                    b: {\n                        lineHeight: 12,\n                        color: 'black'\n                    },\n                },\n                position: 'right',\n                show: false\n            },\n            emphasis: {\n                label: {\n                    show: true\n                }\n            }\n        }\n    ]\n};\n\nreturn option;"
+      },
+      "pluginVersion": "7.1.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT longitude,latitude,elevation,name,station,upper(period)::DATE::TEXT AS mtime,country,\n       CASE\n           WHEN upper(period) >= date_trunc('month', CURRENT_DATE) THEN 2\n           WHEN upper(period) >= date_trunc('year', CURRENT_DATE) THEN 1\n           ELSE 0 END AS category -- 0 active in this month, 1 active in this year, 0 default\nFROM isd.station\nWHERE period && daterange($__timeFrom()::DATE, $__timeTo()::DATE);",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "longitude"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "china_railway",
+          "timeColumn": "crawled_time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "type": "vonng-echarts-panel"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
+      },
+      "description": "Observation station count",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -265,6 +430,8 @@
             "mode": "fixed"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -306,29 +473,36 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 7,
+        "h": 8,
         "w": 9,
         "x": 0,
-        "y": 4
+        "y": 5
       },
       "id": 45,
       "options": {
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": false
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "multi",
+          "sort": "none"
         }
       },
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
+          "editorMode": "code",
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT year AS time,\ncount(*) AS value\nFROM isd.history\nWHERE $__timeFilter(year)\nGROUP BY 1 ORDER BY 1;",
+          "rawSql": "SELECT time, count FROM\n(\n    SELECT date_trunc('year', d)::DATE AS time\n    FROM generate_series($__timeFrom()::DATE - interval '1y', $__timeTo()::DATE + interval '1 year', '1 year') d\n) tt LEFT JOIN LATERAL ( SELECT count(*) AS count FROM isd.station WHERE period @> time ) c ON TRUE;\n\n-- SELECT time, count FROM\n--     (\n--         SELECT date_trunc('month', d)::DATE AS time\n--         FROM generate_series($__timeFrom()::DATE - interval '1y', $__timeTo()::DATE + interval '1 year', '1 month') d\n--     ) tt LEFT JOIN LATERAL ( SELECT count(*) AS count FROM isd.station WHERE period @> time ) c ON TRUE;",
           "refId": "A",
           "select": [
             [
@@ -340,6 +514,23 @@
               }
             ]
           ],
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
           "timeColumn": "time",
           "where": [
             {
@@ -366,128 +557,82 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Meta",
-      "gridPos": {
-        "h": 23,
-        "w": 15,
-        "x": 9,
-        "y": 4
+      "datasource": {
+        "type": "postgres",
+        "uid": "ds-meta"
       },
-      "id": 19,
-      "options": {
-        "followTheme": false,
-        "getOption": "// data: extract and transform grafana data\nfunction parse_grafana_data(d) {\n    var rawData = []\n    if (data.series[0].fields[0].values.buffer === undefined) {\n        rawData = d.series[0].fields.map((e) => {\n            return e.values\n        })\n    } else { // large dataset will have their data inside a buffer\n        rawData = d.series[0].fields.map((e) => {\n            return e.values.buffer\n        })\n    }\n    var nDim = rawData.length\n    var nItem = rawData[0].length\n    var result = []\n    for (var i = 0; i < nItem; i++) {    // item\n        result[i] = []\n        for (var j = 0; j < nDim; j++) {  // dimension\n            result[i][j] = rawData[j][i]\n        }\n    }\n    return result\n}\n\nvar mapData = parse_grafana_data(data)\n\n\n// event: resize after window resize\nwindow.onresize = function () {\n    echartsInstance.resize()\n}\n\n// event: reset symbol size on geo zoom\nechartsInstance.on(\"georoam\", function (params) {\n    var zoomLevel = echartsInstance.getOption().geo[0].zoom\n    var symbolSize = 3 * Math.sqrt(zoomLevel)\n    echartsInstance.setOption({\n        series: [{symbolSize: symbolSize}]\n    })\n});\n\n// event: jump to station main page when click symbol\nechartsInstance.on(\"click\", {seriesName: 'station'}, function (params) {\n    window.location = '/d/isd-station?var-station=' + params.data[4]\n})\n\n// final option\nvar option = {\n    title: {\n        text: 'World Integrated Surface Stations',\n        subtext: 'Click station mark for detail info',\n        top: '2%',\n        right: '2%'\n    },\n    geo: {\n        map: 'world',\n        show: true,\n        center: [0, 20],\n        zoom: 1.6,\n        roam: true\n    },\n    visualMap: {\n        show: false,\n        left: 'right',\n        min: 0,\n        max: 2,\n        inRange: {\n            color: ['#A0A4AA', '#8AB8FF', '#73BF7B']\n        },\n        text: ['Active', 'Silent'],\n        calculable: true\n    },\n    series: [\n        {\n            type: 'scatter',\n            name: 'station',\n            coordinateSystem: 'geo',\n            symbol: 'circle',\n            symbolSize: 5,\n            data: mapData,\n            label: {\n                fontFamily: 'sans-serif',\n                formatter: function (param) {\n                    var pasca = param.value[6]\n                    if (pasca != null) {\n                        pasca = Math.round(pasca / 10)\n                    } else {\n                        pasca = 'N/A '\n                    }\n                    return \"\"\n                        + '{a|' + param.value[3] + '}\\n'            // station name\n                        + '{b|Station : ' + param.value[4] + '}\\n'  // station id\n                        + '{b|Location: (' + param.value[0] + ', ' + param.value[1] + ', ' + param.value[2] + ')}\\n' // location\n                        + '{b|Country : ' + param.value[6] + '}\\n'  // Country\n                        + '{b|LastSeen: ' + param.value[5] + '}\\n'  // Last Update Time\n                },\n                rich: {\n                    a: {\n                        color: 'blue',\n                        fontSize: 14,\n                        fontWeight: 'bold',\n                        lineHeight: 22\n                    },\n                    b: {\n                        lineHeight: 12,\n                        color: 'black'\n                    },\n                },\n                position: 'right',\n                show: false\n            },\n            emphasis: {\n                label: {\n                    show: true\n                }\n            }\n        }\n    ]\n};\n\nreturn option;"
-      },
-      "pluginVersion": "7.1.3",
-      "targets": [
-        {
-          "format": "table",
-          "group": [],
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "SELECT longitude,latitude,elevation,name,station,upper(period)::DATE::TEXT AS mtime,country,\n       CASE\n           WHEN upper(period) >= date_trunc('month', CURRENT_DATE) THEN 2\n           WHEN upper(period) >= date_trunc('year', CURRENT_DATE) THEN 1\n           ELSE 0 END AS category -- 0 active in this month, 1 active in this year, 0 default\nFROM isd.station\nWHERE period && daterange($__timeFrom()::DATE, $__timeTo()::DATE);",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "longitude"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "china_railway",
-          "timeColumn": "crawled_time",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "type": "vonng-echarts-panel"
-    },
-    {
-      "datasource": "Meta",
+      "description": "Station number by country",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "bars",
-            "fillOpacity": 66,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 0,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
+          "links": [
+            {
+              "title": "ISD Country : ${__data.fields.name_en}",
+              "url": "/d/isd-country?var-country=${__data.fields.name_en}"
             }
-          },
+          ],
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "red",
                 "value": null
               },
               {
-                "color": "red",
-                "value": 80
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "green",
+                "value": 100
+              },
+              {
+                "color": "blue",
+                "value": 1000
               }
             ]
-          },
-          "unit": "locale"
+          }
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 8,
         "w": 9,
         "x": 0,
-        "y": 11
+        "y": 13
       },
-      "id": 44,
+      "id": 46,
       "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single"
-        }
+        "labelFields": [
+          "name_en",
+          "name_cn",
+          "iso2",
+          "iso3"
+        ],
+        "sizeField": "count",
+        "textField": "country",
+        "tiling": "treemapSquarify"
       },
       "targets": [
         {
-          "format": "time_series",
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
+          "editorMode": "code",
+          "format": "table",
           "group": [],
+          "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT year AS time, sum(total) AS value\nFROM isd.history\nWHERE $__timeFilter(year)\nGROUP BY year\nORDER BY year;",
+          "rawSql": "SELECT country, count , name_cn AS name_cn, name_en AS name_en, 'ISO2: ' ||iso2 AS iso2, 'ISO3: ' || iso3 AS iso3\n  --, name_en, name_cn \nFROM\n(SELECT country, count(*) FROM isd.station GROUP BY country ORDER BY 2 DESC) ss\nJOIN isd.world w ON ss.country = w.fips\n    ORDER BY 2 DESC;",
           "refId": "A",
           "select": [
             [
@@ -499,6 +644,23 @@
               }
             ]
           ],
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
           "timeColumn": "time",
           "where": [
             {
@@ -509,7 +671,7 @@
           ]
         }
       ],
-      "title": "Observations",
+      "title": "Countries",
       "transformations": [
         {
           "id": "organize",
@@ -517,405 +679,538 @@
             "excludeByName": {},
             "indexByName": {},
             "renameByName": {
-              "value": "Records"
+              "value": "Count"
             }
           }
         }
       ],
-      "type": "timeseries"
+      "type": "marcusolsson-treemap-panel"
     },
     {
-      "datasource": "Meta",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
-          "mappings": []
-        },
-        "overrides": []
+      "collapsed": true,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ds-prometheus"
       },
-      "gridPos": {
-        "h": 10,
-        "w": 9,
-        "x": 0,
-        "y": 17
-      },
-      "id": 42,
-      "options": {
-        "displayLabels": [],
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "values": [
-            "value",
-            "percent"
-          ]
-        },
-        "pieType": "pie",
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "tooltip": {
-          "mode": "single"
-        }
-      },
-      "pluginVersion": "8.0.6",
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": " SELECT year AS time, country AS metric, count(*) AS value \n FROM isd.history\n WHERE year = (SELECT max(year) FROM isd.history WHERE $__timeFilter(year))\n GROUP BY 1,2 ORDER BY 1,2;",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "timeColumn": "time",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "Station by Country",
-      "transformations": [],
-      "type": "piechart"
-    },
-    {
-      "collapsed": false,
-      "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 27
+        "y": 21
       },
       "id": 31,
-      "panels": [],
-      "title": "数据统计",
-      "type": "row"
-    },
-    {
-      "datasource": "Meta",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "center",
-            "displayMode": "auto",
-            "filterable": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "count"
-            },
-            "properties": [
-              {
-                "id": "custom.displayMode",
-                "value": "gradient-gauge"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "range"
-            },
-            "properties": [
-              {
-                "id": "custom.displayMode",
-                "value": "json-view"
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 12,
-        "w": 9,
-        "x": 0,
-        "y": 28
-      },
-      "id": 17,
-      "options": {
-        "showHeader": true
-      },
-      "pluginVersion": "8.0.6",
-      "targets": [
+      "panels": [
         {
-          "format": "table",
-          "group": [],
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "SELECT bin, coalesce(r, 'N/A') AS range, count\nFROM (\n         SELECT bin, ((bin - 1) * 1000)::TEXT || ' ~ ' || (bin * 1000)::TEXT AS r, count(name) AS count\n         FROM (SELECT name, width_bucket(elevation, 0, 10000, 10) AS bin FROM isd.station) t\n         GROUP BY bin\n         ORDER BY bin DESC NULLS LAST\n     ) d;",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "timeColumn": "time",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Station Altitude Distriubtion",
-      "transformations": [
-        {
-          "id": "organize",
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-isd"
+          },
+          "description": "Observation count = Station x Day",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "bars",
+                "fillOpacity": 66,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 0,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "locale"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 22
+          },
+          "id": 44,
           "options": {
-            "excludeByName": {
-              "bin": true
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
             },
-            "indexByName": {},
-            "renameByName": {}
-          }
-        }
-      ],
-      "type": "table"
-    },
-    {
-      "datasource": "Meta",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": null,
-            "displayMode": "auto",
-            "filterable": false
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
           },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
+          "targets": [
+            {
+              "datasource": {
+                "type": "postgres",
+                "uid": "ds-isd"
               },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "ID"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 40
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Comment"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 120
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Coverage"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 100
+              "editorMode": "code",
+              "format": "time_series",
+              "group": [],
+              "metricColumn": "none",
+              "rawQuery": true,
+              "rawSql": "SELECT ts AS time, sum(count) AS value FROM isd.yearly WHERE $__timeFilter(ts) GROUP BY ts ORDER BY ts;",
+              "refId": "A",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "column"
+                  }
+                ]
+              ],
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
               },
-              {
-                "id": "unit",
-                "value": "percent"
-              },
-              {
-                "id": "decimals",
-                "value": 2
-              },
-              {
-                "id": "custom.displayMode",
-                "value": "color-text"
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "red",
-                      "value": null
-                    },
-                    {
-                      "color": "red",
-                      "value": 0.1
-                    },
-                    {
-                      "color": "orange",
-                      "value": 1
-                    },
-                    {
-                      "color": "yellow",
-                      "value": 5
-                    },
-                    {
-                      "color": "super-light-green",
-                      "value": 10
-                    },
-                    {
-                      "color": "green",
-                      "value": 50
-                    },
-                    {
-                      "color": "blue",
-                      "value": 75
-                    }
-                  ]
+              "timeColumn": "time",
+              "where": [
+                {
+                  "name": "$__timeFilter",
+                  "params": [],
+                  "type": "macro"
+                }
+              ]
+            }
+          ],
+          "title": "Observations",
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {},
+                "indexByName": {},
+                "renameByName": {
+                  "value": "Records"
                 }
               }
+            }
+          ],
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-isd"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "align": "center",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "filterable": false,
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "count"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "mode": "gradient",
+                      "type": "gauge"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "range"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "json-view"
+                    }
+                  }
+                ]
+              }
             ]
           },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Category"
+          "gridPos": {
+            "h": 12,
+            "w": 9,
+            "x": 0,
+            "y": 30
+          },
+          "id": 17,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
             },
-            "properties": [
+            "showHeader": true
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "postgres",
+                "uid": "ds-isd"
+              },
+              "format": "table",
+              "group": [],
+              "metricColumn": "none",
+              "rawQuery": true,
+              "rawSql": "SELECT bin, coalesce(r, 'N/A') AS range, count\nFROM (\n         SELECT bin, ((bin - 1) * 1000)::TEXT || ' ~ ' || (bin * 1000)::TEXT AS r, count(name) AS count\n         FROM (SELECT name, width_bucket(elevation, 0, 10000, 10) AS bin FROM isd.station) t\n         GROUP BY bin\n         ORDER BY bin DESC NULLS LAST\n     ) d;",
+              "refId": "A",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "column"
+                  }
+                ]
+              ],
+              "timeColumn": "time",
+              "where": [
+                {
+                  "name": "$__timeFilter",
+                  "params": [],
+                  "type": "macro"
+                }
+              ]
+            }
+          ],
+          "title": "Station Altitude Distriubtion",
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "bin": true
+                },
+                "indexByName": {},
+                "renameByName": {}
+              }
+            }
+          ],
+          "type": "table"
+        },
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "filterable": false,
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": [
               {
-                "id": "custom.width",
-                "value": 200
+                "matcher": {
+                  "id": "byName",
+                  "options": "ID"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 40
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Comment"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 120
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Coverage"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 100
+                  },
+                  {
+                    "id": "unit",
+                    "value": "percent"
+                  },
+                  {
+                    "id": "decimals",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "red"
+                        },
+                        {
+                          "color": "red",
+                          "value": 0.1
+                        },
+                        {
+                          "color": "orange",
+                          "value": 1
+                        },
+                        {
+                          "color": "yellow",
+                          "value": 5
+                        },
+                        {
+                          "color": "super-light-green",
+                          "value": 10
+                        },
+                        {
+                          "color": "green",
+                          "value": 50
+                        },
+                        {
+                          "color": "blue",
+                          "value": 75
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Category"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 200
+                  }
+                ]
               }
             ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 12,
-        "w": 15,
-        "x": 9,
-        "y": 28
-      },
-      "id": 37,
-      "options": {
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": true,
-            "displayName": "coverage"
-          }
-        ]
-      },
-      "pluginVersion": "8.0.6",
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 15,
+            "x": 9,
+            "y": 30
+          },
+          "id": 37,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true,
+            "sortBy": [
+              {
+                "desc": true,
+                "displayName": "coverage"
+              }
+            ]
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "postgres",
+                "uid": "ds-meta"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "group": [],
+              "metricColumn": "none",
+              "rawQuery": true,
+              "rawSql": "SELECT * FROM isd.element;",
+              "refId": "A",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "column"
+                  }
+                ]
+              ],
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              },
+              "timeColumn": "time",
+              "where": [
+                {
+                  "name": "$__timeFilter",
+                  "params": [],
+                  "type": "macro"
+                }
+              ]
+            }
+          ],
+          "title": "Observation Element Coverage",
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {},
+                "indexByName": {},
+                "renameByName": {
+                  "coverage": "Coverage",
+                  "id": "ID",
+                  "name": "Element",
+                  "name_cn": "Comment",
+                  "section": "Category"
+                }
+              }
+            }
+          ],
+          "type": "table"
+        }
+      ],
       "targets": [
         {
-          "format": "table",
-          "group": [],
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "SELECT * FROM isd.elements;",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "timeColumn": "time",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ds-prometheus"
+          },
+          "refId": "A"
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Observation Element Coverage",
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {},
-            "indexByName": {},
-            "renameByName": {
-              "coverage": "Coverage",
-              "id": "ID",
-              "name": "Element",
-              "name_cn": "Comment",
-              "section": "Category"
-            }
-          }
-        }
-      ],
-      "type": "table"
+      "title": "数据统计",
+      "type": "row"
     }
   ],
-  "refresh": false,
-  "schemaVersion": 30,
+  "refresh": "",
+  "schemaVersion": 38,
   "style": "dark",
   "tags": [
-    "ISD"
+    "ISD",
+    "APP",
+    "Overview"
   ],
   "templating": {
     "list": []
@@ -946,5 +1241,6 @@
   "timezone": "",
   "title": "ISD Overview",
   "uid": "isd-overview",
-  "version": 17
+  "version": 50,
+  "weekStart": ""
 }
