@@ -54,7 +54,7 @@ function log_hint()  { printf "${__CB}$*${__CN}"; }
 
 
 #--------------------------------------------------------------#
-# Check
+# Main
 #--------------------------------------------------------------#
 DOWNLOAD_TO="${BIN_DIR}/${PARSER_FILENAME}"
 log_info "download ${PARSER_URL} to ${DOWNLOAD_TO}"

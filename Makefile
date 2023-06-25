@@ -85,19 +85,27 @@ load-hourly:
 # Stable Daily Data (Cleansed Dataset from 1900 - 2023.06)
 #=============================================================#
 # download, load, and refresh stable daily data set
-stable: get-stable load-stable refresh_full
+# stable is cleansed, well-formatted raw csv version of isd.daily
+# it is split into two parts: 2000-.csv.gz and 2000+.csv.gz
+# to fit Github 2GB file size limit
 
-# get daily stable data set (3.4GB)
+stable: get-stable load-stable refresh_full
 get-stable:
 	bin/get-stable
-
-# dump stable dataset from database
-dump-stable:
-	bin/dump-stable
-
-# load entire stable daily dataset and refresh monthly/yearly partitions
 load-stable:
 	bin/load-stable $(PGURL)
+dump-stable:
+	psql $(PGURL) -c 'COPY (SELECT * FROM isd.daily WHERE ts <  $$2000-01-01$$::DATE ORDER BY station,ts) TO STDOUT CSV HEADER' | gzip -9 - > data/daily/2000-.csv.gz
+	psql $(PGURL) -c 'COPY (SELECT * FROM isd.daily WHERE ts >= $$2000-01-01$$::DATE ORDER BY station,ts) TO STDOUT CSV HEADER' | gzip -9 - > data/daily/2000+.csv.gz
+
+
+# dump full isd.daily in sorted order (station, ts)
+dump-full:
+	psql $(PGURL) -c 'COPY (SELECT * FROM isd.daily ORDER BY station,ts) TO STDOUT CSV HEADER' > data/daily.csv
+
+# load full isd.daily from local csv file
+load-full:
+	cat data/daily.csv | psql $(PGURL) -c 'TRUNCATE isd.daily; COPY isd.daily FROM STDIN CSV HEADER'
 
 
 #=============================================================#
@@ -138,7 +146,7 @@ create:
 	psql $(PGURL) -f sql/1_schema.sql
 	psql $(PGURL) -f sql/2_record.sql
 	psql $(PGURL) -f sql/3_hourly.sql
-    psql $(PGURL) -f sql/4_data.sql
+	psql $(PGURL) -f sql/4_data.sql
 
 
 #=============================================================#
@@ -183,9 +191,9 @@ checksums:
 		get-station get-daily get-hourly get-latest \
 		load-station load-daily load-hourly \
 		stable get-stable dump-stable load-stable \
+		dump-full load-full \
 		refresh refresh-full \
 		ui dd \
 		sql drop create \
 		build clean parser get-parser \
 		release release-darwin release-darwin-amd release-darwin-arm checksums
-

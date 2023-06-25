@@ -47,16 +47,16 @@ make reload-hourly      # optional: download and reload latest hourly data of th
 You can get the latest dataset of this year via, It's nice to update them regularly.
 
 ```bash
-make get-station    # get latest station metadata
-make get-daily       # get daily observation summary of the latest year (2023)
-make get-hourly      # get sub-hourly observation record of the latest year (2023)
+make get-station      # get latest station metadata
+make get-daily        # get daily observation summary of the latest year (2023)
+make get-hourly       # get sub-hourly observation record of the latest year (2023)
 ```
 
 If you wish to get daily/hourly data of a specific year, use `get-daily`, and `get-hourly` scripts.
 
 ```bash
-bin/get-daily  2022  # get daily observation summary of a specific year (1900-2023)
-bin/get-hourly 2022  # get sub-hourly observation record of a specific year (1900-2023)
+bin/get-daily  2022   # get daily observation summary of a specific year (1900-2023)
+bin/get-hourly 2022   # get sub-hourly observation record of a specific year (1900-2023)
 ```
 
 
@@ -65,8 +65,8 @@ bin/get-hourly 2022  # get sub-hourly observation record of a specific year (190
 The daily dataset has a stable, cleansed CSV version (around 2.8GB) which can be downloaded and loaded directly without parser.
 
 ```bash
-bin/get-stable
-bin/load-stable
+make get-stable     # download stable isd.daily dataset from Github 
+make load-stable    # load downloaded stable isd.daily dataset into database 
 ```
 
 

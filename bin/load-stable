@@ -21,8 +21,9 @@ PROG_DIR="$(cd $(dirname $0) && pwd)"
 PROG_NAME="$(basename $0)"
 PROJ_DIR=$(dirname $PROG_DIR)
 PARSER="${PROJ_DIR}/bin/isdd"
-DATA_DIR="${PROJ_DIR}/data"
-DATA_FILE="${DATA_DIR}/daily.csv.gz"
+DATA_DIR="${PROJ_DIR}/data/daily"
+DATAFILE_1="${DATA_DIR}/2000-.csv.gz"
+DATAFILE_2="${DATA_DIR}/2000+.csv.gz"
 
 
 #--------------------------------------------------------------#
@@ -41,25 +42,34 @@ function log_hint()  { printf "${__CB}$*${__CN}"; }
 #--------------------------------------------------------------#
 # Check
 #--------------------------------------------------------------#
-# if not found, exit
-if [[ ! -f ${DATA_FILE} ]]; then
-    log_error "data file not found: ${DATA_FILE}"
+if [[ ! -f "${DATAFILE_1}" ]]; then
+    log_error "stable data part1 not found: ${DATAFILE_1}"
     exit 1
+fi
+
+if [[ ! -f "${DATAFILE_2}" ]]; then
+    log_error "stable data part1 not found: ${DATAFILE_2}"
+    exit 2
 fi
 
 if ! psql ${PGURL} -AXtwqc 'SELECT 1' >/dev/null ; then
     log_error "failed to connect to database: ${PGURL}"
-    exit 2
+    exit 3
 fi
+
 
 #--------------------------------------------------------------#
 # Main
 #--------------------------------------------------------------#
-# get year record count
 log_warn "TRUNCATE isd.daily;"
 psql ${PGURL} -AXtwqc 'TRUNCATE isd.daily;'
 
-log_info "COPY ${DATA_FILE} TO isd.daily"
-cat "${DATA_FILE}" | gzip -d | psql ${PGURL} -AXtwc 'COPY isd.daily FROM STDIN CSV HEADER;'
+log_info "load stable data part1: 2000-.csv.gz"
+log_info "COPY ${DATAFILE_1} TO isd.daily"
+cat "${DATAFILE_1}" | gzip -d | psql ${PGURL} -AXtwc 'COPY isd.daily FROM STDIN CSV HEADER;'
+
+log_info "load stable data part2: 2000+.csv.gz"
+log_info "COPY ${DATAFILE_2} TO isd.daily"
+cat "${DATAFILE_2}" | gzip -d | psql ${PGURL} -AXtwc 'COPY isd.daily FROM STDIN CSV HEADER;'
 
 exit $?
