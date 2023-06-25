@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+set -uo pipefail
+#==============================================================#
+# File      :   get-station
+# Desc      :   get isd.station & isd.history data from noaa
+# Ctime     :   2020-11-03
+# Mtime     :   2023-06-23
+# Path      :   bin/get-station
+# Author    :   Ruohang Feng (rh@vonng.com)
+# License   :   Apache-2.0
+#==============================================================#
+
+
+#--------------------------------------------------------------#
+# Param
+#--------------------------------------------------------------#
+PROG_DIR="$(cd $(dirname $0) && pwd)"
+PROG_NAME="$(basename $0)"
+PROJ_DIR=$(dirname $PROG_DIR)
+DATA_DIR="${PROJ_DIR}/data"
+STATION_URL="https://www1.ncdc.noaa.gov/pub/data/noaa/isd-history.csv"
+HISTORY_URL="https://www1.ncdc.noaa.gov/pub/data/noaa/isd-inventory.csv.z"
+STATION_DATA="${DATA_DIR}/station.csv.gz"
+HISTORY_DATA="${DATA_DIR}/history.csv.gz"
+
+# curl https://www1.ncdc.noaa.gov/pub/data/noaa/isd-history.csv -o data/station.csv
+# curl https://www1.ncdc.noaa.gov/pub/data/noaa/isd-inventory.csv.z | gzip -d > data/history.csv
+
+#--------------------------------------------------------------#
+# Utils
+#--------------------------------------------------------------#
+__CN='\033[0m';__CB='\033[0;30m';__CR='\033[0;31m';__CG='\033[0;32m';
+__CY='\033[0;33m';__CB='\033[0;34m';__CM='\033[0;35m';__CC='\033[0;36m';__CW='\033[0;37m';
+function log_info() {  printf "[${__CG} OK ${__CN}] ${__CG}$*${__CN}\n";   }
+function log_warn() {  printf "[${__CY}WARN${__CN}] ${__CY}$*${__CN}\n";   }
+function log_error() { printf "[${__CR}FAIL${__CN}] ${__CR}$*${__CN}\n";   }
+function log_debug() { printf "[${__CB}HINT${__CN}] ${__CB}$*${__CN}\n"; }
+function log_input() { printf "[${__CM} IN ${__CN}] ${__CM}$*\n=> ${__CN}"; }
+function log_hint()  { printf "${__CB}$*${__CN}"; }
+
+log_info "curl ${STATION_URL} -o ${STATION_DATA}"
+curl -SL "${STATION_URL}" | gzip --best > ${STATION_DATA}
+
+log_info "curl ${HISTORY_URL} to ${HISTORY_DATA}"
+curl -SL "${HISTORY_URL}" | gzip -d | gzip --best > ${HISTORY_DATA}
+
+log_info "get station & history done"
+ls -alh ${DATA_DIR}/*.csv.gz

@@ -1,0 +1,160 @@
+#!/usr/bin/env bash
+set -uo pipefail
+#==============================================================#
+# File      :   load-station
+# Desc      :   load isd.station & isd.history from data/
+# Ctime     :   2020-11-03
+# Mtime     :   2023-06-23
+# Path      :   bin/load-station
+# Author    :   Ruohang Feng (rh@vonng.com)
+# License   :   Apache-2.0
+#==============================================================#
+
+
+#--------------------------------------------------------------#
+# Param
+#--------------------------------------------------------------#
+# specify target database connection string with PGURL
+PGURL=${1-'postgres:///'}
+
+PROG_DIR="$(cd $(dirname $0) && pwd)"
+PROG_NAME="$(basename $0)"
+PROJ_DIR=$(dirname $PROG_DIR)
+DATA_DIR="${PROJ_DIR}/data"
+
+STATION_DATA="${DATA_DIR}/station.csv.gz"
+HISTORY_DATA="${DATA_DIR}/history.csv.gz"
+
+#--------------------------------------------------------------#
+# Utils
+#--------------------------------------------------------------#
+__CN='\033[0m';__CB='\033[0;30m';__CR='\033[0;31m';__CG='\033[0;32m';
+__CY='\033[0;33m';__CB='\033[0;34m';__CM='\033[0;35m';__CC='\033[0;36m';__CW='\033[0;37m';
+function log_info() {  printf "[${__CG} OK ${__CN}] ${__CG}$*${__CN}\n";   }
+function log_warn() {  printf "[${__CY}WARN${__CN}] ${__CY}$*${__CN}\n";   }
+function log_error() { printf "[${__CR}FAIL${__CN}] ${__CR}$*${__CN}\n";   }
+function log_debug() { printf "[${__CB}HINT${__CN}] ${__CB}$*${__CN}\n"; }
+function log_input() { printf "[${__CM} IN ${__CN}] ${__CM}$*\n=> ${__CN}"; }
+function log_hint()  { printf "${__CB}$*${__CN}"; }
+
+
+#--------------------------------------------------------------#
+# Preflight
+#--------------------------------------------------------------#
+if [[ ! -f ${STATION_DATA} ]]; then
+    log_error "isd.station data file not found: ${STATION_DATA}"
+    log_hint "download with: make get-station"
+    exit 1
+fi
+
+if [[ ! -f ${HISTORY_DATA} ]]; then
+    log_error "isd.history data file not found: ${HISTORY_DATA}"
+    log_hint "download with: make get-station"
+    exit 2
+fi
+
+# check target database connection with SELECT 1
+if ! psql ${PGURL} -AXtwqc 'SELECT 1'; then
+    log_error "failed to connect to database: ${PGURL}"
+    exit 3
+fi
+
+
+#--------------------------------------------------------------#
+# Station
+#--------------------------------------------------------------#
+log_info "create isd.t_station temp table"
+psql ${PGURL} -AXtw <<-EOF
+DROP TABLE IF EXISTS isd.t_station;
+CREATE TABLE isd.t_station
+(
+    usaf       TEXT,
+    wban       TEXT,
+    name       TEXT,
+    ctry       TEXT,
+    st         TEXT,
+    icao       TEXT,
+    lat        TEXT,
+    lon        TEXT,
+    elev       TEXT,
+    begin_date DATE,
+    end_date   DATE
+);
+EOF
+
+log_info "load isd.t_station temp table"
+cat "${STATION_DATA}" | gzip -d | \
+  psql ${PGURL} -AXtwc "COPY isd.t_station FROM STDIN WITH (FORMAT CSV, HEADER ,FORCE_NULL (usaf,wban,name,ctry,st,icao,lat,lon,elev,begin_date,end_date));"
+
+log_info "load isd.station from isd.t_station"
+psql ${PGURL} -AXtw <<-EOF
+TRUNCATE isd.station;
+INSERT INTO isd.station(station, name, country, province, icao, location, elevation, period)
+SELECT (usaf || wban)::VARCHAR(12)                                     AS station,
+       name::VARCHAR(32),
+       ctry::VARCHAR(2)                                                AS country,
+       st::VARCHAR(2)                                                  AS province,
+       icao::VARCHAR(4),
+       ST_SetSRID(ST_Point(lon::numeric, lat::numeric), 4326)          AS location,
+       CASE WHEN elev ~ '-0999' THEN NULL ELSE elev::NUMERIC::FLOAT END AS elevation,
+       daterange(begin_date::DATE, end_date::DATE, '[]')               AS duration
+FROM isd.t_station;
+DROP TABLE IF EXISTS isd.t_station;
+EOF
+
+
+#--------------------------------------------------------------#
+# History
+#--------------------------------------------------------------#
+
+log_info "create isd.t_history temp table"
+psql ${PGURL} -AXtw <<-EOF
+DROP TABLE IF EXISTS isd.t_history;
+CREATE TABLE isd.t_history
+(
+    usaf VARCHAR(6),
+    wban VARCHAR(5),
+    year INTEGER,
+    m1   INTEGER,
+    m2   INTEGER,
+    m3   INTEGER,
+    m4   INTEGER,
+    m5   INTEGER,
+    m6   INTEGER,
+    m7   INTEGER,
+    m8   INTEGER,
+    m9   INTEGER,
+    m10  INTEGER,
+    m11  INTEGER,
+    m12  INTEGER,
+    PRIMARY KEY (usaf, wban, year)
+);
+EOF
+
+log_info "load isd history data into isd.t_history"
+cat "${HISTORY_DATA}" | gzip -d |
+  psql ${PGURL} -AXtwc "COPY isd.t_history FROM STDIN WITH (FORMAT CSV, HEADER,FORCE_NULL(usaf,wban,year,m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,m12));"
+
+log_info "build isd.history from isd.t_history"
+psql ${PGURL} -AXtw <<-EOF
+-----------------------------------------------------------------------
+-- Build Final Data
+-----------------------------------------------------------------------
+TRUNCATE isd.history;
+INSERT INTO isd.history(station, year, country, active_month, total, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12)
+SELECT i.station,year,country,active_month,total,m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,m12
+FROM (SELECT usaf || wban                                                 AS station,
+             make_date(year, 1, 1)::DATE                                  AS year,
+             m1 + m2 + m3 + m4 + m5 + m6 + m7 + m8 + m9 + m10 + m11 + m12 AS total,
+             m1::BOOLEAN::INT + m2::BOOLEAN::INT + m3::BOOLEAN::INT + m4::BOOLEAN::INT + m5::BOOLEAN::INT +
+             m6::BOOLEAN::INT + m7::BOOLEAN::INT + m8::BOOLEAN::INT + m9::BOOLEAN::INT + m10::BOOLEAN::INT +
+             m11::BOOLEAN::INT + m12::BOOLEAN::INT                        AS active_month,
+             m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,m12
+      FROM isd.t_history
+      ORDER BY 1, 2
+     ) i,
+     LATERAL (SELECT coalesce(country, 'NA') AS country FROM isd.station h WHERE h.station = i.station) res;
+DROP TABLE IF EXISTS isd.t_history;
+EOF
+
+log_info "load station data into database"

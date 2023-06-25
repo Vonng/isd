@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+set -uo pipefail
+#==============================================================#
+# File      :   get-hourly
+# Desc      :   get isd.hourly raw data from noaa
+# Ctime     :   2020-11-03
+# Mtime     :   2023-06-25
+# Path      :   bin/get-hourly
+# Author    :   Ruohang Feng (rh@vonng.com)
+# License   :   Apache-2.0
+#==============================================================#
+
+
+#--------------------------------------------------------------#
+# Param
+#--------------------------------------------------------------#
+# which year's isd.hourly raw data will be downloaded?
+year=${1-$(date '+%Y')}
+
+PROG_DIR="$(cd $(dirname $0) && pwd)"
+PROG_NAME="$(basename $0)"
+PROJ_DIR=$(dirname $PROG_DIR)
+DATA_DIR="${PROJ_DIR}/data/hourly"
+
+#--------------------------------------------------------------#
+# Utils
+#--------------------------------------------------------------#
+__CN='\033[0m'
+__CB='\033[0;30m'
+__CR='\033[0;31m'
+__CG='\033[0;32m'
+__CY='\033[0;33m'
+__CB='\033[0;34m'
+__CM='\033[0;35m'
+__CC='\033[0;36m'
+__CW='\033[0;37m'
+function log_info() { printf "[${__CG} OK ${__CN}] ${__CG}$*${__CN}\n"; }
+function log_warn() { printf "[${__CY}WARN${__CN}] ${__CY}$*${__CN}\n"; }
+function log_error() { printf "[${__CR}FAIL${__CN}] ${__CR}$*${__CN}\n"; }
+function log_debug() { printf "[${__CB}HINT${__CN}] ${__CB}$*${__CN}\n"; }
+function log_input() { printf "[${__CM} IN ${__CN}] ${__CM}$*\n=> ${__CN}"; }
+function log_hint() { printf "${__CB}$*${__CN}"; }
+
+function get_hourly_url() {
+  local this_year=$(date '+%Y')
+  local year=${1-${this_year}}
+  echo "https://www.ncei.noaa.gov/data/global-hourly/archive/csv/${year}.tar.gz"
+}
+
+# macos & linux compatible file size calculation
+function get_file_size() {
+  local filepath=${1-}
+  local size=0
+  # if filepath is empty or file not exists, return 0
+  if [[ -z ${filepath} ]] || [[ ! -f ${filepath} ]]; then
+    echo "0"
+    return 0
+  fi
+  if [ "$(uname)" == "Darwin" ]; then
+    size=$(stat -f '%z' ${filepath})
+  else
+    size=$(stat -c '%s' ${filepath})
+  fi
+  echo ${size}
+  return 0
+}
+
+# download file from url, if file already exists with same size, skip download
+function download_file(){
+  local data_url=$1
+  local data_file=$2
+
+  if [[ -f ${data_file} ]]; then
+    size=$(get_file_size ${data_file})
+    log_warn "data file exists, size: ${size} , path: ${data_file}"
+    curl_size=$(curl -sI ${data_url} | grep -i 'Content-Length' | awk '{print $2}' | tr -d '\r')
+    if [[ ${size} -eq ${curl_size} ]]; then
+      log_info "data url file has same size: ${curl_size} , skip downloading ${data_url}"
+      return 0
+    else
+      log_warn "data url file size ${curl_size} != local ${size}, downloading ${data_url}"
+      log_info "$ curl ${data_url} -o ${data_file}"
+      curl ${data_url} -o ${data_file}
+      return $?
+    fi
+  else
+    log_info "download ${data_url} to ${data_file}"
+    log_info "$ curl ${data_url} -o ${data_file}"
+    curl ${data_url} -o ${data_file}
+    return $?
+  fi
+}
+
+
+#--------------------------------------------------------------#
+# Check
+#--------------------------------------------------------------#
+if ((year > 2024)); then
+  log_info "year ${year} overflow"
+  exit 1
+fi
+
+if ((year < 1900)); then
+  log_info "year ${year} underflow"
+  exit 2
+fi
+
+
+#--------------------------------------------------------------#
+# Main
+#--------------------------------------------------------------#
+DATA_URL=$(get_hourly_url ${year})
+DATA_FILE="${DATA_DIR}/$(basename ${DATA_URL})"
+
+mkdir -p ${DATA_DIR} && cd ${DATA_DIR}
+download_file "${DATA_URL}" "${DATA_FILE}"
