@@ -83,7 +83,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "blue",
+                "color": "#746c9ee6",
                 "value": null
               }
             ]
@@ -126,7 +126,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT count(*) AS \"Station Count\" FROM isd.station;",
+          "rawSql": "SELECT count(*) AS \"Station Count\" FROM isd.station\nWHERE period && daterange($__timeFrom()::DATE, $__timeTo()::DATE, '[]');",
           "refId": "A",
           "select": [
             [
@@ -175,7 +175,7 @@
           "hide": true,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT count(*) AS \"Station (Selected)\"\nFROM isd.station WHERE period && daterange($__timeFrom()::DATE, $__timeTo()::DATE, '[]');",
+          "rawSql": "-- SELECT count(*) AS \"Station (Selected)\"\n-- FROM isd.station \n-- WHERE period && daterange($__timeFrom()::DATE, $__timeTo()::DATE, '[]');",
           "refId": "B",
           "select": [
             [
@@ -224,7 +224,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select reltuples AS \"Daily Records\" from pg_class where oid = 'isd.daily'::RegClass;",
+          "rawSql": "SELECT reltuples AS \"Daily Records\" from pg_class where oid = 'isd.daily'::RegClass;",
           "refId": "C",
           "select": [
             [
@@ -273,7 +273,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select reltuples AS \"Monthly Records\" from pg_class where oid = 'isd.monthly'::RegClass;",
+          "rawSql": "SELECT reltuples AS \"Monthly Records\" from pg_class where oid = 'isd.monthly'::RegClass;",
           "refId": "D",
           "select": [
             [
@@ -322,7 +322,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select reltuples AS \"Annual Records\" from pg_class where oid = 'isd.yearly'::RegClass;",
+          "rawSql": "SELECT reltuples AS \"Annual Records\" from pg_class where oid = 'isd.yearly'::RegClass;",
           "refId": "E",
           "select": [
             [
@@ -369,53 +369,137 @@
         "type": "postgres",
         "uid": "ds-meta"
       },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "links": [
+            {
+              "targetBlank": false,
+              "title": "ISD Station : ${__data.fields.station}",
+              "url": "/d/isd-station?var-station=${__data.fields.station}"
+            },
+            {
+              "title": "ISD Country : ${__data.fields.Country} | ${__data.fields.国家}",
+              "url": "/d/isd-country?var-country=${__data.fields.country}"
+            }
+          ],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
       "gridPos": {
-        "h": 20,
+        "h": 25,
         "w": 15,
         "x": 9,
         "y": 1
       },
-      "id": 19,
+      "id": 47,
       "options": {
-        "followTheme": false,
-        "getOption": "// data: extract and transform grafana data\nfunction parse_grafana_data(d) {\n    var rawData = []\n    if (data.series[0].fields[0].values.buffer === undefined) {\n        rawData = d.series[0].fields.map((e) => {\n            return e.values\n        })\n    } else { // large dataset will have their data inside a buffer\n        rawData = d.series[0].fields.map((e) => {\n            return e.values.buffer\n        })\n    }\n    var nDim = rawData.length\n    var nItem = rawData[0].length\n    var result = []\n    for (var i = 0; i < nItem; i++) {    // item\n        result[i] = []\n        for (var j = 0; j < nDim; j++) {  // dimension\n            result[i][j] = rawData[j][i]\n        }\n    }\n    return result\n}\n\nvar mapData = parse_grafana_data(data)\n\n\n// event: resize after window resize\nwindow.onresize = function () {\n    echartsInstance.resize()\n}\n\n// event: reset symbol size on geo zoom\nechartsInstance.on(\"georoam\", function (params) {\n    var zoomLevel = echartsInstance.getOption().geo[0].zoom\n    var symbolSize = 3 * Math.sqrt(zoomLevel)\n    echartsInstance.setOption({\n        series: [{symbolSize: symbolSize}]\n    })\n});\n\n// event: jump to station main page when click symbol\nechartsInstance.on(\"click\", {seriesName: 'station'}, function (params) {\n    window.location = '/d/isd-station?var-station=' + params.data[4]\n})\n\n// final option\nvar option = {\n    title: {\n        text: 'World Integrated Surface Stations',\n        subtext: 'Click station mark for detail info',\n        top: '2%',\n        right: '2%'\n    },\n    geo: {\n        map: 'world',\n        show: true,\n        center: [0, 20],\n        zoom: 1.6,\n        roam: true\n    },\n    visualMap: {\n        show: false,\n        left: 'right',\n        min: 0,\n        max: 2,\n        inRange: {\n            color: ['#A0A4AA', '#8AB8FF', '#73BF7B']\n        },\n        text: ['Active', 'Silent'],\n        calculable: true\n    },\n    series: [\n        {\n            type: 'scatter',\n            name: 'station',\n            coordinateSystem: 'geo',\n            symbol: 'circle',\n            symbolSize: 5,\n            data: mapData,\n            label: {\n                fontFamily: 'sans-serif',\n                formatter: function (param) {\n                    var pasca = param.value[6]\n                    if (pasca != null) {\n                        pasca = Math.round(pasca / 10)\n                    } else {\n                        pasca = 'N/A '\n                    }\n                    return \"\"\n                        + '{a|' + param.value[3] + '}\\n'            // station name\n                        + '{b|Station : ' + param.value[4] + '}\\n'  // station id\n                        + '{b|Location: (' + param.value[0] + ', ' + param.value[1] + ', ' + param.value[2] + ')}\\n' // location\n                        + '{b|Country : ' + param.value[6] + '}\\n'  // Country\n                        + '{b|LastSeen: ' + param.value[5] + '}\\n'  // Last Update Time\n                },\n                rich: {\n                    a: {\n                        color: 'blue',\n                        fontSize: 14,\n                        fontWeight: 'bold',\n                        lineHeight: 22\n                    },\n                    b: {\n                        lineHeight: 12,\n                        color: 'black'\n                    },\n                },\n                position: 'right',\n                show: false\n            },\n            emphasis: {\n                label: {\n                    show: true\n                }\n            }\n        }\n    ]\n};\n\nreturn option;"
+        "basemap": {
+          "config": {},
+          "name": "Layer 0",
+          "type": "default"
+        },
+        "controls": {
+          "mouseWheelZoom": true,
+          "showAttribution": true,
+          "showDebug": false,
+          "showMeasure": false,
+          "showScale": false,
+          "showZoom": true
+        },
+        "layers": [
+          {
+            "config": {
+              "blur": 15,
+              "radius": 5,
+              "weight": {
+                "field": "weight",
+                "fixed": 1,
+                "max": 1,
+                "min": 0
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "A"
+            },
+            "location": {
+              "latitude": "latitude",
+              "longitude": "longitude",
+              "mode": "coords"
+            },
+            "name": "Station",
+            "opacity": 0.8,
+            "tooltip": true,
+            "type": "heatmap"
+          }
+        ],
+        "tooltip": {
+          "mode": "details"
+        },
+        "view": {
+          "allLayers": false,
+          "id": "e-asia",
+          "lastOnly": false,
+          "lat": 33,
+          "layer": "Station",
+          "lon": 120,
+          "padding": 1,
+          "zoom": 4
+        }
       },
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
           "datasource": {
             "type": "postgres",
             "uid": "ds-meta"
           },
+          "editorMode": "code",
           "format": "table",
-          "group": [],
-          "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT longitude,latitude,elevation,name,station,upper(period)::DATE::TEXT AS mtime,country,\n       CASE\n           WHEN upper(period) >= date_trunc('month', CURRENT_DATE) THEN 2\n           WHEN upper(period) >= date_trunc('year', CURRENT_DATE) THEN 1\n           ELSE 0 END AS category -- 0 active in this month, 1 active in this year, 0 default\nFROM isd.station\nWHERE period && daterange($__timeFrom()::DATE, $__timeTo()::DATE);",
+          "rawSql": "SELECT station, s.name, ST_AsText(location) as location, s.period,longitude,latitude,elevation,country\n     , w.iso2,  w.name_en AS \"Country\", w.name_cn AS \"国家\",\n       CASE WHEN (now() - upper(period)) < '30d' THEN 50 ELSE 10 END AS weight\nFROM isd.station s LEFT JOIN isd.world w ON s.country = w.fips\nWHERE period && daterange($__timeFrom()::DATE, $__timeTo()::DATE) AND NOT (longitude =0 and latitude = 0);",
           "refId": "A",
-          "select": [
-            [
+          "sql": {
+            "columns": [
               {
-                "params": [
-                  "longitude"
-                ],
-                "type": "column"
+                "parameters": [],
+                "type": "function"
               }
-            ]
-          ],
-          "table": "china_railway",
-          "timeColumn": "crawled_time",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
         }
       ],
-      "type": "vonng-echarts-panel"
+      "title": "Station Map",
+      "type": "geomap"
     },
     {
       "datasource": {
@@ -426,7 +510,7 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "orange",
+            "fixedColor": "#746c9ee6",
             "mode": "fixed"
           },
           "custom": {
@@ -436,8 +520,8 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 61,
-            "gradientMode": "none",
+            "fillOpacity": 75,
+            "gradientMode": "hue",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
@@ -464,7 +548,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "orange",
+                "color": "#746c9ee6",
                 "value": null
               }
             ]
@@ -569,8 +653,8 @@
           },
           "links": [
             {
-              "title": "ISD Country : ${__data.fields.name_en}",
-              "url": "/d/isd-country?var-country=${__data.fields.name_en}"
+              "title": "ISD Country : ${__data.fields.name_en} / ${__data.fields.name_cn}",
+              "url": "/d/isd-country?var-country=${__data.fields.country}"
             }
           ],
           "mappings": [],
@@ -586,15 +670,15 @@
                 "value": 1
               },
               {
-                "color": "yellow",
+                "color": "#f5a673",
                 "value": 10
               },
               {
-                "color": "green",
+                "color": "#b783afe6",
                 "value": 100
               },
               {
-                "color": "blue",
+                "color": "#365083e6",
                 "value": 1000
               }
             ]
@@ -603,7 +687,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 13,
         "w": 9,
         "x": 0,
         "y": 13
@@ -632,7 +716,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT country, count , name_cn AS name_cn, name_en AS name_en, 'ISO2: ' ||iso2 AS iso2, 'ISO3: ' || iso3 AS iso3\n  --, name_en, name_cn \nFROM\n(SELECT country, count(*) FROM isd.station GROUP BY country ORDER BY 2 DESC) ss\nJOIN isd.world w ON ss.country = w.fips\n    ORDER BY 2 DESC;",
+          "rawSql": "SELECT country,\n       count,\n       name_cn          AS name_cn,\n       name_en          AS name_en,\n       'ISO2: ' || iso2 AS iso2,\n       'ISO3: ' || iso3 AS iso3\n       --, name_en, name_cn \nFROM (\n        SELECT country, count(*)\n        FROM isd.station\n        WHERE period && daterange($__timeFrom()::DATE, $__timeTo()::DATE, '[]')\nGROUP BY country ORDER BY 2 DESC) ss\nJOIN isd.world w ON ss.country = w.fips ORDER BY 2 DESC;",
           "refId": "A",
           "select": [
             [
@@ -696,14 +780,14 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 26
       },
       "id": 31,
       "panels": [
         {
           "datasource": {
             "type": "postgres",
-            "uid": "ds-isd"
+            "uid": "ds-meta"
           },
           "description": "Observation count = Station x Day",
           "fieldConfig": {
@@ -762,7 +846,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 22
+            "y": 27
           },
           "id": 44,
           "options": {
@@ -781,7 +865,7 @@
             {
               "datasource": {
                 "type": "postgres",
-                "uid": "ds-isd"
+                "uid": "ds-meta"
               },
               "editorMode": "code",
               "format": "time_series",
@@ -845,7 +929,7 @@
         {
           "datasource": {
             "type": "postgres",
-            "uid": "ds-isd"
+            "uid": "ds-meta"
           },
           "fieldConfig": {
             "defaults": {
@@ -903,7 +987,7 @@
             "h": 12,
             "w": 9,
             "x": 0,
-            "y": 30
+            "y": 35
           },
           "id": 17,
           "options": {
@@ -923,7 +1007,7 @@
             {
               "datasource": {
                 "type": "postgres",
-                "uid": "ds-isd"
+                "uid": "ds-meta"
               },
               "format": "table",
               "group": [],
@@ -1099,7 +1183,7 @@
             "h": 12,
             "w": 15,
             "x": 9,
-            "y": 30
+            "y": 35
           },
           "id": 37,
           "options": {
@@ -1200,7 +1284,93 @@
           "refId": "A"
         }
       ],
-      "title": "数据统计",
+      "title": "Observation Stats / 数据统计",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      },
+      "id": 48,
+      "panels": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ds-meta"
+          },
+          "gridPos": {
+            "h": 27,
+            "w": 24,
+            "x": 0,
+            "y": 28
+          },
+          "id": 19,
+          "options": {
+            "followTheme": false,
+            "getOption": "// data: extract and transform grafana data\nfunction parse_grafana_data(d) {\n    var rawData = []\n    if (data.series[0].fields[0].values.buffer === undefined) {\n        rawData = d.series[0].fields.map((e) => {\n            return e.values\n        })\n    } else { // large dataset will have their data inside a buffer\n        rawData = d.series[0].fields.map((e) => {\n            return e.values.buffer\n        })\n    }\n    var nDim = rawData.length\n    var nItem = rawData[0].length\n    var result = []\n    for (var i = 0; i < nItem; i++) {    // item\n        result[i] = []\n        for (var j = 0; j < nDim; j++) {  // dimension\n            result[i][j] = rawData[j][i]\n        }\n    }\n    return result\n}\n\nvar mapData = parse_grafana_data(data)\n\n\n// event: resize after window resize\nwindow.onresize = function () {\n    echartsInstance.resize()\n}\n\n// event: reset symbol size on geo zoom\nechartsInstance.on(\"georoam\", function (params) {\n    var zoomLevel = echartsInstance.getOption().geo[0].zoom\n    var symbolSize = 3 * Math.sqrt(zoomLevel)\n    echartsInstance.setOption({\n        series: [{symbolSize: symbolSize}]\n    })\n});\n\n// event: jump to station main page when click symbol\nechartsInstance.on(\"click\", {seriesName: 'station'}, function (params) {\n    window.location = '/d/isd-station?var-station=' + params.data[4]\n})\n\n// final option\nvar option = {\n    title: {\n        text: 'World Integrated Surface Stations',\n        subtext: 'Click station mark for detail info',\n        top: '2%',\n        right: '2%'\n    },\n    geo: {\n        map: 'world',\n        show: true,\n        center: [0, 20],\n        zoom: 1.6,\n        roam: true\n    },\n    visualMap: {\n        show: false,\n        left: 'right',\n        min: 0,\n        max: 2,\n        inRange: {\n            color: ['#A0A4AA', '#8AB8FF', '#73BF7B']\n        },\n        text: ['Active', 'Silent'],\n        calculable: true\n    },\n    series: [\n        {\n            type: 'scatter',\n            name: 'station',\n            coordinateSystem: 'geo',\n            symbol: 'circle',\n            symbolSize: 5,\n            data: mapData,\n            label: {\n                fontFamily: 'sans-serif',\n                formatter: function (param) {\n                    var pasca = param.value[6]\n                    if (pasca != null) {\n                        pasca = Math.round(pasca / 10)\n                    } else {\n                        pasca = 'N/A '\n                    }\n                    return \"\"\n                        + '{a|' + param.value[3] + '}\\n'            // station name\n                        + '{b|Station : ' + param.value[4] + '}\\n'  // station id\n                        + '{b|Location: (' + param.value[0] + ', ' + param.value[1] + ', ' + param.value[2] + ')}\\n' // location\n                        + '{b|Country : ' + param.value[6] + '}\\n'  // Country\n                        + '{b|LastSeen: ' + param.value[5] + '}\\n'  // Last Update Time\n                },\n                rich: {\n                    a: {\n                        color: 'blue',\n                        fontSize: 14,\n                        fontWeight: 'bold',\n                        lineHeight: 22\n                    },\n                    b: {\n                        lineHeight: 12,\n                        color: 'black'\n                    },\n                },\n                position: 'right',\n                show: false\n            },\n            emphasis: {\n                label: {\n                    show: true\n                }\n            }\n        }\n    ]\n};\n\nreturn option;"
+          },
+          "pluginVersion": "7.1.3",
+          "targets": [
+            {
+              "datasource": {
+                "type": "postgres",
+                "uid": "ds-meta"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "group": [],
+              "metricColumn": "none",
+              "rawQuery": true,
+              "rawSql": "SELECT longitude,latitude,elevation,name,station,upper(period)::DATE::TEXT AS mtime,country,\n       CASE\n           WHEN upper(period) >= date_trunc('month', CURRENT_DATE) THEN 2\n           WHEN upper(period) >= date_trunc('year', CURRENT_DATE) THEN 1\n           ELSE 0 END AS category -- 0 active in this month, 1 active in this year, 0 default\nFROM isd.station\nWHERE period && daterange($__timeFrom()::DATE, $__timeTo()::DATE);",
+              "refId": "A",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "longitude"
+                    ],
+                    "type": "column"
+                  }
+                ]
+              ],
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              },
+              "table": "china_railway",
+              "timeColumn": "crawled_time",
+              "timeColumnType": "timestamp",
+              "where": [
+                {
+                  "name": "$__timeFilter",
+                  "params": [],
+                  "type": "macro"
+                }
+              ]
+            }
+          ],
+          "title": "Station Maps",
+          "type": "vonng-echarts-panel"
+        }
+      ],
+      "title": "Legacy Station Map",
       "type": "row"
     }
   ],
@@ -1241,6 +1411,6 @@
   "timezone": "",
   "title": "ISD Overview",
   "uid": "isd-overview",
-  "version": 50,
+  "version": 76,
   "weekStart": ""
 }
