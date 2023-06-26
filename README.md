@@ -1,91 +1,114 @@
 # ISD —— Integrated Surface Dataset
 
+[中文说明](README_ZH.md)
 
-## SYNOPSIS
-
-Download, Parse, Visualize Integrated Surface Weather Station Dataset. [Demo](https://demo.pigsty.cc/d/isd-overview)
+Fetch, Parse, Analyze, and Visualize Integrated Surface Weather Station Dataset. [Demo](https://demo.pigsty.cc/d/isd-overview)
 
 Including 30000 meteorology station, daily, sub-hourly observation records, from 1900-2023.
 
-It is recommended to use with [Pigsty](https://github.com/Vonng/pigsty), the battery-included PostgreSQL distribution with Grafana & echarts for visualization.
-
 [![](doc/img/isd-overview.jpg)](https://demo.pigsty.cc/d/isd-overview)
 
+It is recommended to use with [Pigsty](https://github.com/Vonng/pigsty), the battery-included PostgreSQL distribution with Grafana & echarts for visualization. It will setup everything for your with `make all`;
+
+Otherwise, you'll have to provide your own PostgreSQL instance, and setup grafana dashboards manually.
 
 
 
 ## Quick Start
 
-Prepare a PostgreSQL Instance, and provide `PGURL` in [`Makefile`](Makefile) or pass it as environment variable.
-
-You will need isd **parser** to load daily/hourly data into database:
+**Clone this repo**
 
 ```bash
-make get-parser   # just download the parser binary from github
-make build        # or build with go if you have the go toolchain
+git clone https://github.com/Vonng/isd.git; cd isd;
 ```
 
-To setup database schema (required) and grafana dashboards (optional):
+**Prepare a PostgreSQL Instance**
+
+Provide `PGURL` in [`Makefile`](Makefile) or export as an environment variable.
 
 ```bash
-make sql        # load isd database schema into postgres (via PGURL env)
-make ui         # setup grafana dashboards
+make sql              # setup postgres schema on target database
 ```
 
-To load some data into database, you can use the following shortcuts
+**Get isd station metadata**
+
+The basic station metadata can be downloaded and loaded with:
 
 ```bash
-make data               # download and load station/isd.daily(2023) data 
-make reload-station     # download and reload station metadata only
-make reload-daily       # download and reload latest daily data and re-calculates monthly/yearly data
+make reload-station   # equivalent to get-station + load-station
 ```
 
-Or if you don't want to parse the raw data from NOAA, just download & load the parsed CSV (stable) with:
+**Fetch and load `isd.daily`**
+
+To load `isd.daily` dataset, which is organized by yearly tarball files.
+You can download the raw data from noaa and parse with isd parser
 
 ```bash
-make reload-station     # station metadata still need to be downloaded
-
-# load cleansed, already parsed csv isd.daily stable dataset (~2023.06.24)
-make get-stable         # download stable isd.daily dataset from Github 
-make load-stable        # load downloaded stable isd.daily dataset into database
+make get-parser       # download parser binary from github, you can just build with: make build
+make reload-daily     # download and reload latest daily data and re-calculates monthly/yearly data
 ```
 
+**Load Parsed Stable CSV Data**
 
-### Get More
-
-If you wish to get daily/hourly data of a specific year, use `get-daily`, and `get-hourly` scripts.
+Or just load the pre-parsed stable part from GitHub.
+Which is well-formatted CSV that does not require an isd parser.
 
 ```bash
-bin/get-daily  2022   # get daily observation summary of a specific year (1900-2023)
-bin/get-hourly 2022   # get sub-hourly observation record of a specific year (1900-2023)
+make get-stable       # download stable isd.daily dataset from Github
+make load-stable      # load downloaded stable isd.daily dataset into database
 ```
 
-And you can load the downloaded data into database via `load-daily` and `load-hourly` scripts.
+
+
+
+## More Data
+
+There are two parts of isd datasets needs to be regularly updated: station metadata & `isd.daily` of the latest year, you can reload them with:
 
 ```bash
-bin/load-daily  'postgres:///' 2021  # load isd.daily of year 2021 into database
-bin/load-hourly 'postgres:///' 2022  # load isd.hourly of year 2022 into database
+make reload           # reload-station + reload-daily
 ```
 
+You can download and load `isd.daily` in a specific year with:
+
+```bash
+bin/get-daily  2022                   # get daily observation summary of a specific year (1900-2023)
+bin/load-daily 'postgres:///' 2022    # load daily data of a specific year 
+```
+
+You can also download and load `isd.hourly` in a specific year with:
+
+```bash
+bin/get-hourly  2022                  # get hourly observation record of a specific year (1900-2023)
+bin/load-hourly 'postgres:///' 2022   # load hourly data of a specific year 
+```
 
 
 ## Data
 
 ### Dataset
 
-| Dataset      | Sample                                               | Document                                                | Comments                              |
-| ----------- | -------------------------------------------------- | ------------------------------------------------------ | --------------------------------- |
-| ISD Hourly  | [isd-hourly-sample.csv](doc/isd-hourly-sample.csv) | [isd-hourly-document.pdf](doc/isd-hourly-document.pdf) | (Sub-) Hour oberservation records |
-| ISD Daily   | [isd-daily-sample.csv](doc/isd-daily-sample.csv)   | [isd-daily-format.txt](doc/isd-daily-format.txt)       | Daily summary                     |
-| ISD Monthly | N/A                                                | [isd-gsom-document.pdf](doc/isd-gsom-document.pdf)     | Not used, gen from daily          |
-| ISD Yearly  | N/A                                                | [isd-gsoy-document.pdf](doc/isd-gsoy-document.pdf)     | Not used, gen from monthly        |
+There are four official datasets
 
-Daily Data: Original tarball size 3GB, table size 24 GB
+| Dataset     | Sample                                             | Document                                               | Comments                            |
+|-------------|----------------------------------------------------|--------------------------------------------------------|-------------------------------------|
+| ISD Hourly  | [isd-hourly-sample.csv](doc/isd-hourly-sample.csv) | [isd-hourly-document.pdf](doc/isd-hourly-document.pdf) | (Sub)Hour observation records       |
+| ISD Daily   | [isd-daily-sample.csv](doc/isd-daily-sample.csv)   | [isd-daily-format.txt](doc/isd-daily-format.txt)       | Daily summary                       |
+| ISD Monthly | N/A                                                | [isd-gsom-document.pdf](doc/isd-gsom-document.pdf)     | Not used, Generate from `isd.daily` |
+| ISD Yearly  | N/A                                                | [isd-gsoy-document.pdf](doc/isd-gsoy-document.pdf)     | Not used, Generate from `isd.daily` |
 
-Hourly Data: Original tarball size 105GB, Table size 1TB (+600GB Indexes).
 
-It is recommended have at least 40GB for daily dataset in target PostgreSQL, and 2TB for full hourly dataset. 
+**Daily Dataset**
 
+- Tarball size 2.8GB (until 2023-06-24)
+- Table size 24GB, Index size 6GB, Total size in PostgreSQL = 30GB
+- If timescaledb compression is used, it will be compressed to around 4.5GB
+
+**Hourly dataset**
+
+- Tarball size 117GB
+- Table size 1TB+ , Index size 600GB+
+ 
 
 
 ### Schema
@@ -126,7 +149,7 @@ CREATE TABLE IF NOT EXISTS isd.daily
     temp_mean   NUMERIC(3, 1),        -- mean temperature ℃
     temp_min    NUMERIC(3, 1),        -- min temperature ℃
     temp_max    NUMERIC(3, 1),        -- max temperature ℃
-    dewp_mean   NUMERIC(3, 1),        -- mean dew point (℃)
+    dewp_mean   NUMERIC(3, 1),        -- mean dew point ℃
     -- pressure
     slp_mean    NUMERIC(5, 1),        -- sea level pressure (hPa)
     stp_mean    NUMERIC(5, 1),        -- station pressure (hPa)
@@ -237,6 +260,7 @@ OPTIONS
         -h              print help
 
 ```
+
 
 
 ## UI
