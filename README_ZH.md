@@ -2,7 +2,7 @@
 
 下载、解析、分析、绘制 ISD 数据集，包括3万+气象站过去120年间的亚小时级原始观测数据。[Demo](https://demo.pigsty.cc/d/isd-overview)
 
-[![](doc/img/isd-overview.jpg)](https://demo.pigsty.cc/d/isd-overview)
+[![ISD Overview](https://github.com/Vonng/isd/assets/8587410/827c1961-6426-46c6-9fb1-25cd93507924)](https://demo.pigsty.cc/d/isd-overview)
 
 推荐与  [Pigsty](https://github.com/Vonng/pigsty) 共同使用，它提供了一个开箱即用的 PostgreSQL 实例，Grafana 与 Echarts 可视化环境。
 
@@ -272,19 +272,38 @@ OPTIONS
 
 这里提供了几个使用 Grafana 制作的 Dashboard，可以用于探索 ISD 数据集，查询气象站与历史气象数据。
 
+
 **ISD Overview**
 
-Dashboard [definition](ui/isd/isd-overview.json)
+全局概览，总体指标与气象站导航。
+
+[![ISD Overview](https://github.com/Vonng/isd/assets/8587410/827c1961-6426-46c6-9fb1-25cd93507924)](ui/isd/isd-overview.json)
+
+
+**ISD Country**
+
+展示单个国家/地区内所有的气象站。
+
+[![ISD Country](https://github.com/Vonng/isd/assets/8587410/9a21ed5d-8540-4410-b582-a25fa88e9186)](ui/isd/isd-country.json)
+
 
 **ISD Station**
 
-Dashboard [definition](ui/isd/isd-station.json)
+展示单个气象站的详细信息，元数据，天/月/年度汇总指标。
 
-![](doc/img/isd-station.jpg)
+<details><summary>ISD Station Dashboard</summary>
 
-**ISD Monthly**
+[![ISD Station](https://github.com/Vonng/isd/assets/8587410/4c72d529-d309-4629-97e0-ed8315c3a7a9)](ui/isd/isd-station.json)
 
-Dashboard [definition](ui/isd/isd-monthly.json)
+</details>
 
-![](doc/img/isd-monthly.jpg)
 
+**ISD Detail**
+
+展示一个气象站原始亚小时级观测指标数据，需要 `isd.hourly` 数据集。
+
+<details><summary>ISD Station Dashboard</summary>
+
+[![ISD Detail](https://github.com/Vonng/isd/assets/8587410/726fad65-32c9-4a4c-b233-9ede7b0ae20d)](ui/isd/isd-detail.json)
+
+</details>

@@ -6,7 +6,7 @@ Fetch, Parse, Analyze, and Visualize Integrated Surface Weather Station Dataset.
 
 Including 30000 meteorology station, daily, sub-hourly observation records, from 1900-2023.
 
-[![](doc/img/isd-overview.jpg)](https://demo.pigsty.cc/d/isd-overview)
+[![ISD Overview](https://github.com/Vonng/isd/assets/8587410/827c1961-6426-46c6-9fb1-25cd93507924)](https://demo.pigsty.cc/d/isd-overview)
 
 It is recommended to use with [Pigsty](https://github.com/Vonng/pigsty), the battery-included PostgreSQL distribution with Grafana & echarts for visualization. It will setup everything for your with `make all`;
 
@@ -267,17 +267,36 @@ OPTIONS
 
 **ISD Overview**
 
-Dashboard [definition](ui/isd/isd-overview.json)
+Show all stations on a world map.
+
+[![ISD Overview](https://github.com/Vonng/isd/assets/8587410/827c1961-6426-46c6-9fb1-25cd93507924)](ui/isd/isd-overview.json)
+
+
+**ISD Country**
+
+Show all stations among a country.
+
+[![ISD Country](https://github.com/Vonng/isd/assets/8587410/9a21ed5d-8540-4410-b582-a25fa88e9186)](ui/isd/isd-country.json)
+
 
 **ISD Station**
 
-Dashboard [definition](ui/isd/isd-station.json)
+Visualize station metadata and daily/monthly/yearly summary
 
-![](doc/img/isd-station.jpg)
 
-**ISD Monthly**
+<details><summary>ISD Station Dashboard</summary>
 
-Dashboard [definition](ui/isd/isd-monthly.json)
+[![ISD Station](https://github.com/Vonng/isd/assets/8587410/4c72d529-d309-4629-97e0-ed8315c3a7a9)](ui/isd/isd-station.json)
 
-![](doc/img/isd-monthly.jpg)
+</details>
 
+
+**ISD Detail**
+
+Visualize hourly observation raw metrics. 
+
+<details><summary>ISD Station Dashboard</summary>
+
+[![ISD Detail](https://github.com/Vonng/isd/assets/8587410/726fad65-32c9-4a4c-b233-9ede7b0ae20d)](ui/isd/isd-detail.json)
+
+</details>
