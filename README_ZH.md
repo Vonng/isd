@@ -307,3 +307,8 @@ OPTIONS
 [![ISD Detail](https://github.com/Vonng/isd/assets/8587410/726fad65-32c9-4a4c-b233-9ede7b0ae20d)](ui/isd/isd-detail.json)
 
 </details>
+
+
+## 协议
+
+[MIT License](LICENSE)
