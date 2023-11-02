@@ -20,10 +20,12 @@ git clone https://github.com/Vonng/isd.git; cd isd;
 
 **准备一个 PostgreSQL 实例**
 
-你应当通过 [`Makefile`](Makefile) 里的 `PGURL` 变量，或导出的环境变量来传递数据库实例的连接信息。
+该 PostgreSQL 实例应当启用了 PostGIS 扩展。使用 `PGURL` 环境变量传递数据库连接信息：
 
 ```bash
-make sql              # setup postgres schema on target database
+# Pigsty 默认使用的管理员账号是 dbuser_dba，密码是 DBUser.DBA
+export PGURL=postgres://dbuser_dba:DBUser.DBA@127.0.0.1:5432/meta?sslmode=disable
+psql "${PGURL}" -c 'SELECT 1'  # 检查连接是否可用
 ```
 
 **获取并导入ISD气象站元数据**
@@ -31,7 +33,7 @@ make sql              # setup postgres schema on target database
 这是一份每日更新的气象站元数据，包含了气象站的经纬度、海拔、名称、国家、省份等信息，使用以下命令下载并导入。
 
 ```bash
-make reload-station   # equivalent to get-station + load-station
+make reload-station   # 相当于先下载最新的Station数据再加载：get-station + load-station
 ```
 
 **获取并导入最新的 `isd.daily` 数据**
@@ -51,8 +53,8 @@ ISD Daily 数据集有一些脏数据与[重复数据](doc/isd-daily-caveat.md)�
 该数据集包含了截止到 2023-06-24 的 `isd.daily` 数据，你可以直接下载并导入 PostgreSQL 中，不需要 Parser，
 
 ```bash
-make get-stable       # download stable isd.daily dataset from Github
-make load-stable      # load downloaded stable isd.daily dataset into database
+make get-stable       # 从 Github 上获取稳定的 isd.daily 历史数据集。
+make load-stable      # 将下载好的稳定历史数据集加载到 PostgreSQL 数据库中。
 ```
 
 
@@ -73,14 +75,14 @@ make reload           # 实际上是：reload-station + reload-daily
 
 ```bash
 bin/get-daily  2022                   # 获取 2022 年的每日气象观测摘要 (1900-2023)
-bin/load-daily 'postgres:///' 2022    # 加载 2022 年的每日气象观测摘要 (1900-2023) 
+bin/load-daily "${PGURL}" 2022        # 加载 2022 年的每日气象观测摘要 (1900-2023) 
 ```
 
 除了每日摘要 `isd.daily`， ISD 还提供了一份更详细的亚小时级原始观测记录 `isd.hourly`，下载与加载的方式与前者类似：
 
 ```bash
-bin/get-hourly  2022                  # get hourly observation record of a specific year (1900-2023)
-bin/load-hourly 'postgres:///' 2022   # load hourly data of a specific year 
+bin/get-hourly  2022                  # 下载特定某一年的小时级观测记录（例如2022年，可选 1900-2023）
+bin/load-hourly "${PGURL}" 2022       # 加载特定某一年的小时级观测记录 
 ```
 
 
@@ -147,39 +149,39 @@ CREATE TABLE IF NOT EXISTS isd.daily
 (
     station     VARCHAR(12) NOT NULL, -- station number 6USAF+5WBAN
     ts          DATE        NOT NULL, -- observation date
-    -- temperature & dew point
+    -- 气温 & 露点
     temp_mean   NUMERIC(3, 1),        -- mean temperature ℃
     temp_min    NUMERIC(3, 1),        -- min temperature ℃
     temp_max    NUMERIC(3, 1),        -- max temperature ℃
     dewp_mean   NUMERIC(3, 1),        -- mean dew point ℃
-    -- pressure
+    -- 气压
     slp_mean    NUMERIC(5, 1),        -- sea level pressure (hPa)
     stp_mean    NUMERIC(5, 1),        -- station pressure (hPa)
-    -- visible distance
+    -- 可见距离
     vis_mean    NUMERIC(6),           -- visible distance (m)
-    -- wind speed
+    -- 风速
     wdsp_mean   NUMERIC(4, 1),        -- average wind speed (m/s)
     wdsp_max    NUMERIC(4, 1),        -- max wind speed (m/s)
     gust        NUMERIC(4, 1),        -- max wind gust (m/s) 
-    -- precipitation / snow depth
+    -- 降水 / 雪深
     prcp_mean   NUMERIC(5, 1),        -- precipitation (mm)
     prcp        NUMERIC(5, 1),        -- rectified precipitation (mm)
     sndp        NuMERIC(5, 1),        -- snow depth (mm)
-    -- FRSHTT (Fog/Rain/Snow/Hail/Thunder/Tornado)
+    -- FRSHTT (Fog/Rain/Snow/Hail/Thunder/Tornado) 雾/雨/雪/雹/雷/龙卷
     is_foggy    BOOLEAN,              -- (F)og
     is_rainy    BOOLEAN,              -- (R)ain or Drizzle
     is_snowy    BOOLEAN,              -- (S)now or pellets
     is_hail     BOOLEAN,              -- (H)ail
     is_thunder  BOOLEAN,              -- (T)hunder
     is_tornado  BOOLEAN,              -- (T)ornado or Funnel Cloud
-    -- record count
+    -- 统计聚合使用的记录数
     temp_count  SMALLINT,             -- record count for temp
     dewp_count  SMALLINT,             -- record count for dew point
     slp_count   SMALLINT,             -- record count for sea level pressure
     stp_count   SMALLINT,             -- record count for station pressure
     wdsp_count  SMALLINT,             -- record count for wind speed
     visib_count SMALLINT,             -- record count for visible distance
-    -- temp marks
+    -- 气温标记
     temp_min_f  BOOLEAN,              -- aggregate min temperature
     temp_max_f  BOOLEAN,              -- aggregate max temperature
     prcp_flag   CHAR,                 -- precipitation flag: ABCDEFGHI

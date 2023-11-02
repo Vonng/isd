@@ -24,7 +24,15 @@ git clone https://github.com/Vonng/isd.git; cd isd;
 
 **Prepare a PostgreSQL Instance**
 
-Provide `PGURL` in [`Makefile`](Makefile) or export as an environment variable.
+Export `PGURL` in your environment to specify the target postgres database:
+
+```bash
+# the default PGURL for pigsty's meta database, change that accordingly
+export PGURL=postgres://dbuser_dba:DBUser.DBA@127.0.0.1:5432/meta?sslmode=disable
+psql "${PGURL}" -c 'SELECT 1'  # check if connection is ok
+```
+
+then init database [schema](sql/) with:
 
 ```bash
 make sql              # setup postgres schema on target database
@@ -73,14 +81,14 @@ You can download and load `isd.daily` in a specific year with:
 
 ```bash
 bin/get-daily  2022                   # get daily observation summary of a specific year (1900-2023)
-bin/load-daily 'postgres:///' 2022    # load daily data of a specific year 
+bin/load-daily "${PGURL}" 2022    # load daily data of a specific year 
 ```
 
 You can also download and load `isd.hourly` in a specific year with:
 
 ```bash
 bin/get-hourly  2022                  # get hourly observation record of a specific year (1900-2023)
-bin/load-hourly 'postgres:///' 2022   # load hourly data of a specific year 
+bin/load-hourly "${PGURL}" 2022   # load hourly data of a specific year 
 ```
 
 
