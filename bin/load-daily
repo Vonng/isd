@@ -58,7 +58,7 @@ if [[ ${PGURL} =~ ^[0-9]+$ ]]; then
     exit 1
 fi
 
-if (( year > 2024 )); then
+if (( year > 2025 )); then
     log_info "year ${year} overflow"
     exit 2
 fi
